@@ -6,8 +6,44 @@ package CPAN::Common::Index;
 # ABSTRACT: No abstract given for CPAN::Common::Index
 # VERSION
 
-# Dependencies
-use autodie 2.00;
+use Carp ();
+
+sub new {
+    my ( $class, $args ) = @_;
+    if ( ref $args ne 'HASH' ) {
+        Carp::croak("Argument to new() must be a hash reference");
+    }
+
+    # for attributes, grab them from args and create accessors if
+    # not already created
+    my %attributes;
+    for my $k ( $class->attributes ) {
+        $attributes{$k} = delete $args->{$k} if exists $args->{$k};
+    }
+    if ( keys %$args ) {
+        Carp::croak( "Unknown arguments to new(): " . join( " ", keys %$args ) );
+    }
+    my $self = bless \%attributes, $class;
+    eval { $self->validate_attributes };
+    if ( my $err = $@ ) {
+        Carp::croak("Object failed validation: $@");
+    }
+    return $self;
+}
+
+sub _build_accessors {
+    my $class = shift;
+    for my $k ( $class->attributes ) {
+        no strict 'refs';
+        *{ $class . "::$k" } = sub {
+            return @_ > 1 ? $_[0]->{$k} = $_[1] : $_[0]->{k};
+        };
+    }
+    return 1; # so it can be last line of modules
+}
+
+# default validation does nothing
+sub validate_attributes { 1 }
 
 1;
 
