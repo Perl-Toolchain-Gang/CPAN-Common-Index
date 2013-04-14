@@ -8,6 +8,25 @@ package CPAN::Common::Index;
 
 use Carp ();
 
+#--------------------------------------------------------------------------#
+# class construction
+#--------------------------------------------------------------------------#
+
+sub _build_accessors {
+    my $class = shift;
+    for my $k ( keys %{ $class->attributes } ) {
+        no strict 'refs';
+        *{ $class . "::$k" } = sub {
+            return @_ > 1 ? $_[0]->{$k} = $_[1] : $_[0]->{$k};
+        };
+    }
+    return 1; # so it can be last line of modules
+}
+
+#--------------------------------------------------------------------------#
+# object construction
+#--------------------------------------------------------------------------#
+
 sub new {
     my ( $class, $args ) = @_;
     $args = {} unless defined $args;
@@ -39,19 +58,46 @@ sub new {
     return $self;
 }
 
-sub _build_accessors {
-    my $class = shift;
-    for my $k ( keys %{ $class->attributes } ) {
-        no strict 'refs';
-        *{ $class . "::$k" } = sub {
-            return @_ > 1 ? $_[0]->{$k} = $_[1] : $_[0]->{$k};
-        };
-    }
-    return 1; # so it can be last line of modules
-}
+#--------------------------------------------------------------------------#
+# stub methods
+#--------------------------------------------------------------------------#
+
+# default reload reques does nothing; may not apply to some subclasses
+sub refresh_index { 1 }
 
 # default validation does nothing
 sub validate_attributes { 1 }
+
+#--------------------------------------------------------------------------#
+# abstract method: must be implmented in subclasses
+#--------------------------------------------------------------------------#
+
+# search_modules: data from 02packages.details.txt
+# arguments: key/value pairs;  keys can be 'package',
+# 'distribution', 'version' or 'author'.
+# value can be exact or regex; should return URL's
+# for location
+
+# search_authors: returns data from 01mailrc.txt
+# arguments: key/value pairs; keys can be 'author'
+# value can be exact or regex
+
+
+# index_age: how old the index is in seconds
+
+my @abstract_methods = qw(
+  search_modules
+  search_authors
+  index_age
+);
+
+for my $m (@abstract_methods) {
+    no strict 'refs';
+    *{ __PACKAGE__ . "::$m" } = sub {
+        my ($self) = @_;
+        Carp::croak( "$m() not implemented by " . ( ref $self or $self ) );
+    };
+}
 
 1;
 
