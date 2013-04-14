@@ -3,13 +3,14 @@ use strict;
 use warnings;
 
 package CPAN::Common::Index;
-# ABSTRACT: No abstract given for CPAN::Common::Index
+# ABSTRACT: Common library for searching CPAN modules, authors and distributions
 # VERSION
 
 use Carp ();
 
 sub new {
     my ( $class, $args ) = @_;
+    $args = {} unless defined $args;
     if ( ref $args ne 'HASH' ) {
         Carp::croak("Argument to new() must be a hash reference");
     }
@@ -17,8 +18,15 @@ sub new {
     # for attributes, grab them from args and create accessors if
     # not already created
     my %attributes;
-    for my $k ( $class->attributes ) {
-        $attributes{$k} = delete $args->{$k} if exists $args->{$k};
+    my $defaults = $class->attributes;
+    for my $k ( keys %$defaults ) {
+        if ( exists $args->{$k} ) {
+            $attributes{$k} = delete $args->{$k};
+        }
+        else {
+            my $d = $defaults->{$k};
+            $attributes{$k} = ref $d eq 'CODE' ? $d->() : $d;
+        }
     }
     if ( keys %$args ) {
         Carp::croak( "Unknown arguments to new(): " . join( " ", keys %$args ) );
@@ -33,10 +41,10 @@ sub new {
 
 sub _build_accessors {
     my $class = shift;
-    for my $k ( $class->attributes ) {
+    for my $k ( keys %{ $class->attributes } ) {
         no strict 'refs';
         *{ $class . "::$k" } = sub {
-            return @_ > 1 ? $_[0]->{$k} = $_[1] : $_[0]->{k};
+            return @_ > 1 ? $_[0]->{$k} = $_[1] : $_[0]->{$k};
         };
     }
     return 1; # so it can be last line of modules

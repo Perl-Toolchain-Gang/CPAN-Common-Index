@@ -10,7 +10,11 @@ use parent 'CPAN::Common::Index';
 
 use Module::Load ();
 
-sub attributes { qw/resolvers/ }
+sub attributes {
+    return {
+        resolvers => sub { [] },
+    };
+}
 
 sub assemble {
     my ($class, @backends) = @_;
@@ -29,7 +33,7 @@ sub assemble {
     return $class->new( { resolvers => \@resolvers } );
 }
 
-sub validate {
+sub validate_attributes {
     my ($self) = @_;
     my $resolvers = $self->resolvers;
     if ( ref $resolvers ne 'ARRAY' ) {

@@ -9,27 +9,33 @@ package CPAN::Common::Index::Mirror;
 use parent 'CPAN::Common::Index';
 
 use File::Spec;
+use File::Temp 0.19; # newdir
 
-sub attributes { qw/root/ }
+sub attributes {
+    return {
+        cache  => sub { File::Temp->newdir },
+        mirror => "http://www.cpan.org/",
+    };
+}
 
 my @INDICES = qw(
   t/CPAN/authors/01mailrc.txt
   t/CPAN/modules/02packages.details.txt
 );
 
-sub validate {
+sub validate_attributes {
     my ($self) = @_;
-    my $root = $self->root;
-    if ( !defined $root ) {
-        Carp::croak("Required attribute 'root' missing");
+    my $cache = $self->cache;
+    if ( ! -d $cache ) {
+        Carp::croak("Cache directory '$cache' does not exist");
     }
-    for my $path (@INDICES) {
-        if ( ! -r File::Spec->catfile($root, $path) ) {
-            Carp::croak("Can't find readable index file '$path'");
-        }
-    }
+    # XXX validate mirror URL?
     return 1;
 }
+
+# XXX on demand, we want to get the indices from the mirror to
+# the cache, probably using File::Fetch so we can handle any
+# sort of URL.
 
 __PACKAGE__->_build_accessors;
 
