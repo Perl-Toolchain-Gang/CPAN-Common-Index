@@ -76,6 +76,8 @@ subtest 'refresh and unpack index files' => sub {
     }
 };
 
+# XXX test that files in cache aren't overwritten?
+
 done_testing;
 # COPYRIGHT
 # vim: ts=4 sts=4 sw=4 et:
