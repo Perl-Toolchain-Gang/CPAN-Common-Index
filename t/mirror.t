@@ -5,8 +5,10 @@ use Test::More 0.96;
 use Test::FailWarnings;
 use Test::Deep '!blessed';
 use Test::Fatal;
+
 use Cwd qw/getcwd/;
 use File::Temp;
+use File::Spec::Functions qw/catfile/;
 
 use lib 't/lib';
 use CommonTests;
@@ -14,6 +16,8 @@ use CommonTests;
 my $cwd         = getcwd;
 my $test_mirror = "file:///$cwd/t/CPAN";
 my $cache       = File::Temp->newdir;
+my $mailrc      = "01mailrc.txt";
+my $packages    = "02packages.details.txt";
 
 require_ok("CPAN::Common::Index::Mirror");
 
@@ -55,6 +59,21 @@ subtest "constructor tests" => sub {
         $@ => qr/Argument to new\(\) must be a hash reference/,
         "Non hashref argument dies with error"
     );
+};
+
+subtest 'refresh and unpack index files' => sub {
+    my $index = new_ok(
+        'CPAN::Common::Index::Mirror' => [ { cache => $cache, mirror => $test_mirror } ],
+        "new with cache and mirror"
+    );
+
+    for my $file ( $mailrc, "$mailrc.gz", $packages, "$packages.gz" ) {
+        ok( ! -e catfile($cache, $file), "$file not there" );
+    }
+    ok( $index->refresh_index, "refreshed index" );
+    for my $file ( $mailrc, "$mailrc.gz", $packages, "$packages.gz" ) {
+        ok( -e catfile($cache, $file), "$file is there" );
+    }
 };
 
 done_testing;

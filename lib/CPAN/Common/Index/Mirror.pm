@@ -8,8 +8,10 @@ package CPAN::Common::Index::Mirror;
 
 use parent 'CPAN::Common::Index';
 
-use File::Spec;
 use File::Temp 0.19; # newdir
+use File::Fetch;
+use IO::Uncompress::Gunzip ();
+use URI;
 
 sub attributes {
     return {
@@ -18,24 +20,42 @@ sub attributes {
     };
 }
 
-my @INDICES = qw(
-  t/CPAN/authors/01mailrc.txt
-  t/CPAN/modules/02packages.details.txt
-);
-
 sub validate_attributes {
     my ($self) = @_;
+
+    # cache directory needs to exist
     my $cache = $self->cache;
-    if ( ! -d $cache ) {
+    if ( !-d $cache ) {
         Carp::croak("Cache directory '$cache' does not exist");
     }
-    # XXX validate mirror URL?
+
+    # ensure URL ends in '/'
+    my $mirror = $self->mirror;
+    $mirror =~ s{/?$}{/};
+    $self->mirror($mirror);
+
     return 1;
 }
 
 # XXX on demand, we want to get the indices from the mirror to
 # the cache, probably using File::Fetch so we can handle any
 # sort of URL.
+my @INDICES = qw(
+  authors/01mailrc.txt.gz
+  modules/02packages.details.txt.gz
+);
+
+sub refresh_index {
+    my ($self) = @_;
+    for my $file (@INDICES) {
+        my $remote = URI->new_abs( $file, $self->mirror );
+        my $ff = File::Fetch->new( uri => $remote );
+        my $where = $ff->fetch( to => $self->cache );
+        ( my $uncompressed = $where ) =~ s/\.gz$//;
+        IO::Uncompress::Gunzip::gunzip( $where, $uncompressed );
+    }
+    return 1;
+}
 
 __PACKAGE__->_build_accessors;
 
