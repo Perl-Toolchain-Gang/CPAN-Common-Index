@@ -76,6 +76,17 @@ subtest 'refresh and unpack index files' => sub {
     }
 };
 
+subtest 'check index age' => sub {
+    my $index = new_ok(
+        'CPAN::Common::Index::Mirror' => [ { cache => $cache, mirror => $test_mirror } ],
+        "new with cache and mirror"
+    );
+    my $package = $index->cached_package;
+    ok( -f $package, "got the package file" );
+    my $expected_age = (stat($package))[9];
+    is( $index->index_age, $expected_age, "index_age() is correct" );
+};
+
 # XXX test that files in cache aren't overwritten?
 
 done_testing;

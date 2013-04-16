@@ -9,6 +9,7 @@ package CPAN::Common::Index::Mirror;
 use parent 'CPAN::Common::Index';
 
 use CPAN::DistnameInfo;
+use File::Basename ();
 use File::Fetch;
 use File::Temp 0.19; # newdir
 use IO::Uncompress::Gunzip ();
@@ -40,21 +41,23 @@ sub validate_attributes {
     return 1;
 }
 
-my %INDICES = qw(
-  mailrc => 'authors/01mailrc.txt.gz',
-  packages => 'modules/02packages.details.txt.gz',
+my %INDICES = (
+    mailrc   => 'authors/01mailrc.txt.gz',
+    packages => 'modules/02packages.details.txt.gz',
 );
 
 sub cached_package {
     my ($self) = @_;
-    my $package = File::Spec->catfile( $self->cache, $INDICES{packages} );
+    my $package = File::Spec->catfile( $self->cache,
+        File::Basename::basename( $INDICES{packages} ) );
     $self->refresh_index unless -r $package;
     return $package;
 }
 
 sub cached_mailrc {
     my ($self) = @_;
-    my $mailrc = File::Spec->catfile( $self->cache, $INDICES{mailrc} );
+    my $mailrc =
+      File::Spec->catfile( $self->cache, File::Basename::basename( $INDICES{mailrc} ) );
     $self->refresh_index unless -r $mailrc;
     return $mailrc;
 }
