@@ -47,12 +47,16 @@ my %INDICES = qw(
 
 sub cached_package {
     my ($self) = @_;
-    File::Spec->catfile( $self->cache, $INDICES{packages} );
+    my $package = File::Spec->catfile( $self->cache, $INDICES{packages} );
+    $self->refresh_index unless -r $package;
+    return $package;
 }
 
 sub cached_mailrc {
     my ($self) = @_;
-    File::Spec->catfile( $self->cache, $INDICES{mailrc} );
+    my $mailrc = File::Spec->catfile( $self->cache, $INDICES{mailrc} );
+    $self->refresh_index unless -r $mailrc;
+    return $mailrc;
 }
 
 sub refresh_index {
@@ -60,9 +64,11 @@ sub refresh_index {
     for my $file ( values %INDICES ) {
         my $remote = URI->new_abs( $file, $self->mirror );
         my $ff = File::Fetch->new( uri => $remote );
-        my $where = $ff->fetch( to => $self->cache );
+        my $where = $ff->fetch( to => $self->cache )
+          or Carp::croak( $ff->error );
         ( my $uncompressed = $where ) =~ s/\.gz$//;
-        IO::Uncompress::Gunzip::gunzip( $where, $uncompressed );
+        IO::Uncompress::Gunzip::gunzip( $where, $uncompressed )
+          or Carp::croak "gunzip failed: $IO::Uncompress::Gunzip::GunzipError\n";
     }
     return 1;
 }
@@ -70,7 +76,7 @@ sub refresh_index {
 # epoch secs
 sub index_age {
     my ($self) = @_;
-    my $package = ;
+    my $package = $self->cached_package;
     return ( -r $package ? ( stat($package) )[9] : 0 ); # mtime if readable
 }
 
