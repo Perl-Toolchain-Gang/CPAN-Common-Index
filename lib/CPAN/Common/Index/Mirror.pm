@@ -8,9 +8,12 @@ package CPAN::Common::Index::Mirror;
 
 use parent 'CPAN::Common::Index';
 
-use File::Temp 0.19; # newdir
+use CPAN::DistnameInfo;
 use File::Fetch;
+use File::Temp 0.19; # newdir
 use IO::Uncompress::Gunzip ();
+use Search::Dict;
+use Tie::Handle::SkipHeader;
 use URI;
 
 sub attributes {
@@ -37,17 +40,24 @@ sub validate_attributes {
     return 1;
 }
 
-# XXX on demand, we want to get the indices from the mirror to
-# the cache, probably using File::Fetch so we can handle any
-# sort of URL.
-my @INDICES = qw(
-  authors/01mailrc.txt.gz
-  modules/02packages.details.txt.gz
+my %INDICES = qw(
+  mailrc => 'authors/01mailrc.txt.gz',
+  packages => 'modules/02packages.details.txt.gz',
 );
+
+sub cached_package {
+    my ($self) = @_;
+    File::Spec->catfile( $self->cache, $INDICES{packages} );
+}
+
+sub cached_mailrc {
+    my ($self) = @_;
+    File::Spec->catfile( $self->cache, $INDICES{mailrc} );
+}
 
 sub refresh_index {
     my ($self) = @_;
-    for my $file (@INDICES) {
+    for my $file ( values %INDICES ) {
         my $remote = URI->new_abs( $file, $self->mirror );
         my $ff = File::Fetch->new( uri => $remote );
         my $where = $ff->fetch( to => $self->cache );
@@ -55,6 +65,46 @@ sub refresh_index {
         IO::Uncompress::Gunzip::gunzip( $where, $uncompressed );
     }
     return 1;
+}
+
+# epoch secs
+sub index_age {
+    my ($self) = @_;
+    my $package = ;
+    return ( -r $package ? ( stat($package) )[9] : 0 ); # mtime if readable
+}
+
+sub search_modules { }
+sub search_authors { }
+
+sub _xform { my @fields = split " ", $_[0], 2; return $fields[0] }
+
+sub find_package {
+    my ( $self, $id ) = @_;
+
+    my $index_path = $self->cached_package;
+
+    die "Can't read $index_path" unless -r $index_path;
+
+    tie *HP, 'Tie::Handle::SkipHeader', "<", $index_path;
+
+    my $pos = look * HP, $id, { xform => \&_xform, fold => 1 };
+
+    return if $pos == -1;
+
+    my $string = readline *HP;
+    my ( $mod, $version, $dist, $comment ) = split " ", $string, 4;
+
+    my ( $author, $file ) = $dist =~ m{\A./../([^/]+)/(.*)$};
+
+    return [
+        {
+            name    => $mod,
+            userid  => $author,
+            file    => $file,
+            version => $version,
+        },
+    ];
 }
 
 __PACKAGE__->_build_accessors;
