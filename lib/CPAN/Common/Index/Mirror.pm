@@ -50,6 +50,7 @@ sub cached_package {
     my ($self) = @_;
     my $package = File::Spec->catfile( $self->cache,
         File::Basename::basename( $INDICES{packages} ) );
+    $package =~ s/\.gz$//;
     $self->refresh_index unless -r $package;
     return $package;
 }
@@ -58,6 +59,7 @@ sub cached_mailrc {
     my ($self) = @_;
     my $mailrc =
       File::Spec->catfile( $self->cache, File::Basename::basename( $INDICES{mailrc} ) );
+    $mailrc =~ s/\.gz$//;
     $self->refresh_index unless -r $mailrc;
     return $mailrc;
 }
@@ -83,7 +85,19 @@ sub index_age {
     return ( -r $package ? ( stat($package) )[9] : 0 ); # mtime if readable
 }
 
-sub search_modules { }
+sub search_modules {
+    my ($self, $args) = @_;
+    Carp::croak("Argument to search_modules must be hash reference")
+        unless ref $args eq 'HASH';
+    if ( $args->{name} and ref $args->{name} eq '' ) {
+        # binary search 02packages on name
+        # double check against remaining $args
+    }
+    else {
+        # walk 02packages for things that match all criteria
+    }
+}
+
 sub search_authors { }
 
 sub _xform { my @fields = split " ", $_[0], 2; return $fields[0] }
