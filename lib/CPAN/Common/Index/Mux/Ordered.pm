@@ -11,22 +11,20 @@ use parent 'CPAN::Common::Index';
 use Module::Load ();
 
 sub attributes {
-    return {
-        resolvers => sub { [] },
-    };
+    return { resolvers => sub { [] }, };
 }
 
 sub assemble {
-    my ($class, @backends) = @_;
+    my ( $class, @backends ) = @_;
 
     my @resolvers;
 
-    while ( @backends ) {
+    while (@backends) {
         my ( $subclass, $config ) = splice @backends, 0, 2;
         my $full_class = "${class}::${subclass}";
-        eval { Module::Load::load( $full_class ) }
-            or Carp::croak($@);
-        my $object = $full_class->new( $config );
+        eval { Module::Load::load($full_class) }
+          or Carp::croak($@);
+        my $object = $full_class->new($config);
         push @resolvers, $object;
     }
 
@@ -39,12 +37,34 @@ sub validate_attributes {
     if ( ref $resolvers ne 'ARRAY' ) {
         Carp::croak("The 'resolvers' argument must be an array reference");
     }
-    for my $r ( @{$self->resolvers} ) {
-        if ( ! eval { $r->isa("CPAN::Common::Index") } ) {
+    for my $r ( @{ $self->resolvers } ) {
+        if ( !eval { $r->isa("CPAN::Common::Index") } ) {
             Carp::croak("Resolver '$r' is not a CPAN::Common::Index object");
         }
     }
     return 1;
+}
+
+sub search_packages {
+    my ( $self, $args ) = @_;
+    Carp::croak("Argument to search_modules must be hash reference")
+      unless ref $args eq 'HASH';
+    my @found;
+    if ( $args->{name} and ref $args->{name} eq '' ) {
+        for my $source ( @{ $self->resolvers } ) {
+            if ( my @result = $source->search_packages( $args ) ) {
+                # XXX double check against remaining $args
+                push @found, @result;
+                last;
+            }
+        }
+    }
+    else {
+        for my $source ( @{ $self->resolvers } ) {
+            # walk 02packages for things that match all criteria
+        }
+    }
+    return wantarray ? @found : $found[0];
 }
 
 __PACKAGE__->_build_accessors;

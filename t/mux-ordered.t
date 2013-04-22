@@ -57,6 +57,13 @@ subtest "constructor tests" => sub {
     );
 };
 
+subtest "find package" => sub {
+    my $index = new_ok(
+        'CPAN::Common::Index::Mux::Ordered' => [ { resolvers => [ $mirror_index ] } ],
+        "new with single mirror resolver"
+    );
+    test_find_package( $index );
+};
 
 done_testing;
 # COPYRIGHT

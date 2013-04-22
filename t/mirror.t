@@ -19,6 +19,13 @@ my $cache       = File::Temp->newdir;
 my $mailrc      = "01mailrc.txt";
 my $packages    = "02packages.details.txt";
 
+sub new_mirror_index {
+    my $index = new_ok(
+        'CPAN::Common::Index::Mirror' => [ { cache => $cache, mirror => $test_mirror } ],
+        "new with cache and mirror"
+    );
+}
+
 require_ok("CPAN::Common::Index::Mirror");
 
 subtest "constructor tests" => sub {
@@ -41,10 +48,7 @@ subtest "constructor tests" => sub {
     );
 
     # both specified
-    new_ok(
-        'CPAN::Common::Index::Mirror' => [ { cache => $cache, mirror => $test_mirror } ],
-        "new with cache and mirror"
-    );
+    new_mirror_index;
 
     # unknown argument
     eval { CPAN::Common::Index::Mirror->new( { mirror => $test_mirror, foo => 'bar' } ) };
@@ -62,10 +66,7 @@ subtest "constructor tests" => sub {
 };
 
 subtest 'refresh and unpack index files' => sub {
-    my $index = new_ok(
-        'CPAN::Common::Index::Mirror' => [ { cache => $cache, mirror => $test_mirror } ],
-        "new with cache and mirror"
-    );
+    my $index = new_mirror_index;
 
     for my $file ( $mailrc, "$mailrc.gz", $packages, "$packages.gz" ) {
         ok( ! -e catfile($cache, $file), "$file not there" );
@@ -76,18 +77,20 @@ subtest 'refresh and unpack index files' => sub {
     }
 };
 
+# XXX test that files in cache aren't overwritten?
+
 subtest 'check index age' => sub {
-    my $index = new_ok(
-        'CPAN::Common::Index::Mirror' => [ { cache => $cache, mirror => $test_mirror } ],
-        "new with cache and mirror"
-    );
+    my $index = new_mirror_index;
     my $package = $index->cached_package;
     ok( -f $package, "got the package file" );
     my $expected_age = (stat($package))[9];
     is( $index->index_age, $expected_age, "index_age() is correct" );
 };
 
-# XXX test that files in cache aren't overwritten?
+subtest 'find package' => sub {
+    my $index = new_mirror_index;
+    test_find_package( $index );
+};
 
 done_testing;
 # COPYRIGHT

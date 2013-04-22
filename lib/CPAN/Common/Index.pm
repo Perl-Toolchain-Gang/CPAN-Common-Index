@@ -86,7 +86,7 @@ sub validate_attributes { 1 }
 # index_age: how old the index is in seconds
 
 my @abstract_methods = qw(
-  search_modules
+  search_packages
   search_authors
   index_age
 );

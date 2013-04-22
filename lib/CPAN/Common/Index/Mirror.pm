@@ -85,17 +85,20 @@ sub index_age {
     return ( -r $package ? ( stat($package) )[9] : 0 ); # mtime if readable
 }
 
-sub search_modules {
-    my ($self, $args) = @_;
+sub search_packages {
+    my ( $self, $args ) = @_;
     Carp::croak("Argument to search_modules must be hash reference")
-        unless ref $args eq 'HASH';
+      unless ref $args eq 'HASH';
+    my @found;
     if ( $args->{name} and ref $args->{name} eq '' ) {
         # binary search 02packages on name
+        push @found, $self->find_package( $args->{name} );
         # double check against remaining $args
     }
     else {
         # walk 02packages for things that match all criteria
     }
+    return wantarray ? @found : $found[0];
 }
 
 sub search_authors { }
@@ -118,16 +121,13 @@ sub find_package {
     my $string = readline *HP;
     my ( $mod, $version, $dist, $comment ) = split " ", $string, 4;
 
-    my ( $author, $file ) = $dist =~ m{\A./../([^/]+)/(.*)$};
+    $dist =~ s{\A./../}{};
 
-    return [
-        {
-            name    => $mod,
-            userid  => $author,
-            file    => $file,
-            version => $version,
-        },
-    ];
+    return {
+        package => $mod,
+        version => $version,
+        uri     => "cpan:///distfile/$dist",
+    };
 }
 
 __PACKAGE__->_build_accessors;
