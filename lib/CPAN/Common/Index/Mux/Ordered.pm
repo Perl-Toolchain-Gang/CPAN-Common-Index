@@ -45,14 +45,17 @@ sub validate_attributes {
     return 1;
 }
 
+# have to think carefully about the sematics of regex search when indices
+# are stacked; only one result for any given package (or package/version)
 sub search_packages {
     my ( $self, $args ) = @_;
     Carp::croak("Argument to search_modules must be hash reference")
       unless ref $args eq 'HASH';
     my @found;
     if ( $args->{name} and ref $args->{name} eq '' ) {
+        # looking for exact match, so we just want the first hit
         for my $source ( @{ $self->resolvers } ) {
-            if ( my @result = $source->search_packages( $args ) ) {
+            if ( my @result = $source->search_packages($args) ) {
                 # XXX double check against remaining $args
                 push @found, @result;
                 last;
@@ -60,8 +63,11 @@ sub search_packages {
         }
     }
     else {
+        # accumulate results from all resolvers
+        my %seen;
         for my $source ( @{ $self->resolvers } ) {
-            # walk 02packages for things that match all criteria
+            my @result = $source->search_packages($args);
+            push @found, grep { !$seen{ $_->{package} }++ } @result;
         }
     }
     return wantarray ? @found : $found[0];
