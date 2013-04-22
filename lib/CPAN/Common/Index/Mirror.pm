@@ -96,7 +96,11 @@ sub search_packages {
         # double check against remaining $args
     }
     else {
-        # walk 02packages for things that match all criteria
+        open my $fh, "<", $self->cached_package;
+        while (my $string = <$fh>) {
+            my ( $mod, $version, $dist, $comment ) = split " ", $string, 4;
+            # XXX test against criteria
+        }
     }
     return wantarray ? @found : $found[0];
 }
