@@ -96,10 +96,20 @@ sub search_packages {
         # double check against remaining $args
     }
     else {
-        open my $fh, "<", $self->cached_package;
-        while (my $string = <$fh>) {
+        my $index_path = $self->cached_package;
+        die "Can't read $index_path" unless -r $index_path;
+        tie *HP, 'Tie::Handle::SkipHeader', "<", $index_path;
+
+        LINE: while ( my $string = <HP> ) {
             my ( $mod, $version, $dist, $comment ) = split " ", $string, 4;
-            # XXX test against criteria
+            next LINE unless $mod =~ $args->{name};
+            $dist =~ s{\A./../}{};
+            push @found,
+              {
+                package => $mod,
+                version => $version,
+                uri     => "cpan:///distfile/$dist",
+              };
         }
     }
     return wantarray ? @found : $found[0];

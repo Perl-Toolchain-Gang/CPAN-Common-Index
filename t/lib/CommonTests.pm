@@ -1,38 +1,40 @@
 use strict;
 use warnings;
+
 package CommonTests;
 
 use Exporter;
 use Test::More;
 
-our @ISA = qw/Exporter/;
+our @ISA    = qw/Exporter/;
 our @EXPORT = qw(
-    test_find_package
+  test_find_package
+  test_search_package
 );
 
 sub test_find_package {
     my $index = shift;
-    
+
     my @cases = (
         {
             package => 'File::Marker',
             version => '0.13',
-            uri => 'cpan:///distfile/DAGOLDEN/File-Marker-0.13.tar.gz',
+            uri     => 'cpan:///distfile/DAGOLDEN/File-Marker-0.13.tar.gz',
         },
         {
             package => 'Dist::Zilla',
             version => '4.300034',
-            uri => 'cpan:///distfile/RJBS/Dist-Zilla-4.300034.tar.gz',
+            uri     => 'cpan:///distfile/RJBS/Dist-Zilla-4.300034.tar.gz',
         },
         {
             package => 'Moo::Role',
             version => 'undef',
-            uri => 'cpan:///distfile/MSTROUT/Moo-1.001000.tar.gz',
+            uri     => 'cpan:///distfile/MSTROUT/Moo-1.001000.tar.gz',
         },
         {
             package => 'attributes',
             version => '0.2',
-            uri => 'cpan:///distfile/FLORA/perl-5.17.4.tar.bz2',
+            uri     => 'cpan:///distfile/FLORA/perl-5.17.4.tar.bz2',
         },
     );
 
@@ -40,7 +42,32 @@ sub test_find_package {
         my $got = $index->search_packages( { name => $c->{package} } );
         is_deeply( $got, $c, "find $c->{package}" );
     }
+}
 
+sub test_search_package {
+    my $index = shift;
+
+    my @cases = (
+        {
+            label => 'query on name and version',
+            query => {
+                name    => qr/e::Marker$/,
+                version => 0.13,
+            },
+            result => [
+                {
+                    package => 'File::Marker',
+                    version => '0.13',
+                    uri     => 'cpan:///distfile/DAGOLDEN/File-Marker-0.13.tar.gz',
+                }
+            ],
+        },
+    );
+
+    for my $c (@cases) {
+        my @got = $index->search_packages( $c->{query} );
+        is_deeply( \@got, $c->{result}, $c->{label} ) or diag explain \@got;
+    }
 }
 
 1;

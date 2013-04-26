@@ -92,6 +92,11 @@ subtest 'find package' => sub {
     test_find_package( $index );
 };
 
+subtest 'find package' => sub {
+    my $index = new_mirror_index;
+    test_search_package( $index );
+};
+
 done_testing;
 # COPYRIGHT
 # vim: ts=4 sts=4 sw=4 et:
