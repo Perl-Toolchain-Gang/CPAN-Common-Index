@@ -89,54 +89,56 @@ sub search_packages {
     my ( $self, $args ) = @_;
     Carp::croak("Argument to search_modules must be hash reference")
       unless ref $args eq 'HASH';
+
+    my $index_path = $self->cached_package;
+    die "Can't read $index_path" unless -r $index_path;
+    tie *PD, 'Tie::Handle::SkipHeader', "<", $index_path;
+
+    # XXX this is not right, since we don't do version comparisons with a regexp
+    # XXX rules probably need to be scalars or regexps or subs
+    my $rules = _regexify($args);
+
     my @found;
     if ( $args->{name} and ref $args->{name} eq '' ) {
         # binary search 02packages on name
-        push @found, $self->find_package( $args->{name} );
-        # double check against remaining $args
+        my $pos = look * PD, $args->{name}, { xform => \&_xform, fold => 1 };
+        return if $pos == -1;
+        # XXX eventually, loop lines until name doesn't match so we can
+        # search an index with unique package+version, not just package
+        my $line = <PD>;
+        push @found, _match_line( $line, $rules );
     }
     else {
-        my $index_path = $self->cached_package;
-        die "Can't read $index_path" unless -r $index_path;
-        tie *HP, 'Tie::Handle::SkipHeader', "<", $index_path;
-
-        LINE: while ( my $string = <HP> ) {
-            my ( $mod, $version, $dist, $comment ) = split " ", $string, 4;
-            next LINE unless $mod =~ $args->{name};
-            $dist =~ s{\A./../}{};
-            push @found,
-              {
-                package => $mod,
-                version => $version,
-                uri     => "cpan:///distfile/$dist",
-              };
+        # iterate all lines looking for match
+        LINE: while ( my $line = <PD> ) {
+            push @found, _match_line( $line, $rules );
         }
     }
     return wantarray ? @found : $found[0];
 }
 
-sub search_authors { }
+sub search_authors { ... }
 
-sub _xform { my @fields = split " ", $_[0], 2; return $fields[0] }
+sub _xform {
+    my @fields = split " ", $_[0], 2;
+    return $fields[0];
+}
 
-sub find_package {
-    my ( $self, $id ) = @_;
+sub _regexify {
+    my ($input) = @_;
+    my $output = {};
+    for my $k ( keys %$input ) {
+        $output->{$k} =
+          ref $input->{$k} eq 'Regexp' ? $input->{$k} : qr/\A\Q$input->{$k}\E\z/;
+    }
+    return $output;
+}
 
-    my $index_path = $self->cached_package;
-
-    die "Can't read $index_path" unless -r $index_path;
-
-    tie *HP, 'Tie::Handle::SkipHeader', "<", $index_path;
-
-    my $pos = look * HP, $id, { xform => \&_xform, fold => 1 };
-
-    return if $pos == -1;
-
-    my $string = readline *HP;
-    my ( $mod, $version, $dist, $comment ) = split " ", $string, 4;
-
+sub _match_line {
+    my ( $line, $rules ) = @_;
+    my ( $mod, $version, $dist, $comment ) = split " ", $line, 4;
+    return unless $mod =~ $rules->{name};
     $dist =~ s{\A./../}{};
-
     return {
         package => $mod,
         version => $version,
