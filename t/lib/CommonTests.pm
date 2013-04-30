@@ -49,9 +49,22 @@ sub test_search_package {
 
     my @cases = (
         {
-            label => 'query on name and version',
+            label => 'query on name',
             query => {
                 name    => qr/e::Marker$/,
+            },
+            result => [
+                {
+                    package => 'File::Marker',
+                    version => '0.13',
+                    uri     => 'cpan:///distfile/DAGOLDEN/File-Marker-0.13.tar.gz',
+                }
+            ],
+        },
+        {
+            label => 'query on name and version',
+            query => {
+                name    => qr/Marker$/,
                 version => 0.13,
             },
             result => [
