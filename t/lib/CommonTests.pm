@@ -39,7 +39,7 @@ sub test_find_package {
     );
 
     for my $c (@cases) {
-        my $got = $index->search_packages( { name => $c->{package} } );
+        my $got = $index->search_packages( { package => $c->{package} } );
         is_deeply( $got, $c, "find $c->{package}" );
     }
 }
@@ -49,9 +49,21 @@ sub test_search_package {
 
     my @cases = (
         {
-            label => 'query on name',
+            label  => 'query on package',
+            query  => { package => qr/e::Marker$/, },
+            result => [
+                {
+                    package => 'File::Marker',
+                    version => '0.13',
+                    uri     => 'cpan:///distfile/DAGOLDEN/File-Marker-0.13.tar.gz',
+                }
+            ],
+        },
+        {
+            label => 'query on package and version',
             query => {
-                name    => qr/e::Marker$/,
+                package => qr/Marker$/,
+                version => 0.13,
             },
             result => [
                 {
@@ -62,16 +74,13 @@ sub test_search_package {
             ],
         },
         {
-            label => 'query on name and version',
-            query => {
-                name    => qr/Marker$/,
-                version => 0.13,
-            },
+            label  => 'query on dist',
+            query  => { dist => qr/1\.4404\.tar\.gz$/, },
             result => [
                 {
-                    package => 'File::Marker',
-                    version => '0.13',
-                    uri     => 'cpan:///distfile/DAGOLDEN/File-Marker-0.13.tar.gz',
+                    'package' => 'Parse::CPAN::Meta',
+                    'uri'     => 'cpan:///distfile/DAGOLDEN/Parse-CPAN-Meta-1.4404.tar.gz',
+                    'version' => '1.4404'
                 }
             ],
         },

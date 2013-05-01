@@ -96,13 +96,13 @@ sub search_packages {
 
     # Convert scalars or regexps to subs
     my $rules;
-    if ( $args->{name} ) {
-        if ( $args->{name} eq 'CODE' ) {
-            $rules->{name} = $args->{name};
+    if ( $args->{package} ) {
+        if ( $args->{package} eq 'CODE' ) {
+            $rules->{package} = $args->{package};
         }
         else {
-            my $re = ref $args->{name} eq 'Regexp' ? $args->{name} : qr/\A\Q$args->{name}\E\z/;
-            $rules->{name} = sub { $_[0] =~ $re };
+            my $re = ref $args->{package} eq 'Regexp' ? $args->{package} : qr/\A\Q$args->{package}\E\z/;
+            $rules->{package} = sub { $_[0] =~ $re };
         }
     }
 
@@ -118,12 +118,22 @@ sub search_packages {
         }
     }
 
+    if ( $args->{dist} ) {
+        if ( $args->{dist} eq 'CODE' ) {
+            $rules->{dist} = $args->{dist};
+        }
+        else {
+            my $re = ref $args->{dist} eq 'Regexp' ? $args->{dist} : qr/\A\Q$args->{dist}\E\z/;
+            $rules->{dist} = sub { $_[0] =~ $re };
+        }
+    }
+
     my @found;
-    if ( $args->{name} and ref $args->{name} eq '' ) {
-        # binary search 02packages on name
-        my $pos = look * PD, $args->{name}, { xform => \&_xform, fold => 1 };
+    if ( $args->{package} and ref $args->{package} eq '' ) {
+        # binary search 02packages on package
+        my $pos = look * PD, $args->{package}, { xform => \&_xform, fold => 1 };
         return if $pos == -1;
-        # XXX eventually, loop lines until name doesn't match so we can
+        # XXX eventually, loop lines until package doesn't match so we can
         # search an index with unique package+version, not just package
         my $line = <PD>;
         push @found, _match_line( $line, $rules );
@@ -147,11 +157,14 @@ sub _xform {
 sub _match_line {
     my ( $line, $rules ) = @_;
     my ( $mod, $version, $dist, $comment ) = split " ", $line, 4;
-    if ( $rules->{name} ) {
-        return unless $rules->{name}->($mod);
+    if ( $rules->{package} ) {
+        return unless $rules->{package}->($mod);
     }
     if ( $rules->{version} ) {
         return unless $rules->{version}->($version);
+    }
+    if ( $rules->{dist} ) {
+        return unless $rules->{dist}->($dist);
     }
     $dist =~ s{\A./../}{};
     return {
