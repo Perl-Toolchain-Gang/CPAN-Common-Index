@@ -94,9 +94,29 @@ sub search_packages {
     die "Can't read $index_path" unless -r $index_path;
     tie *PD, 'Tie::Handle::SkipHeader', "<", $index_path;
 
-    # XXX this is not right, since we don't do version comparisons with a regexp
-    # XXX rules probably need to be scalars or regexps or subs
-    my $rules = _regexify($args);
+    # Convert scalars or regexps to subs
+    my $rules;
+    if ( $args->{name} ) {
+        if ( $args->{name} eq 'CODE' ) {
+            $rules->{name} = $args->{name};
+        }
+        else {
+            my $re = ref $args->{name} eq 'Regexp' ? $args->{name} : qr/\A\Q$args->{name}\E\z/;
+            $rules->{name} = sub { $_[0] =~ $re };
+        }
+    }
+
+    if ( $args->{version} ) {
+        if ( ref $args->{version} eq 'CODE' ) {
+            $rules->{version} = $args->{version};
+        }
+        else {
+            my $v = version->parse( $args->{version} );
+            $rules->{version} = sub {
+                eval { version->parse( $_[0] ) == $v };
+            };
+        }
+    }
 
     my @found;
     if ( $args->{name} and ref $args->{name} eq '' ) {
@@ -124,20 +144,15 @@ sub _xform {
     return $fields[0];
 }
 
-sub _regexify {
-    my ($input) = @_;
-    my $output = {};
-    for my $k ( keys %$input ) {
-        $output->{$k} =
-          ref $input->{$k} eq 'Regexp' ? $input->{$k} : qr/\A\Q$input->{$k}\E\z/;
-    }
-    return $output;
-}
-
 sub _match_line {
     my ( $line, $rules ) = @_;
     my ( $mod, $version, $dist, $comment ) = split " ", $line, 4;
-    return unless $mod =~ $rules->{name};
+    if ( $rules->{name} ) {
+        return unless $rules->{name}->($mod);
+    }
+    if ( $rules->{version} ) {
+        return unless $rules->{version}->($version);
+    }
     $dist =~ s{\A./../}{};
     return {
         package => $mod,
