@@ -65,6 +65,14 @@ subtest "find package" => sub {
     test_find_package( $index );
 };
 
+subtest "search package" => sub {
+    my $index = new_ok(
+        'CPAN::Common::Index::Mux::Ordered' => [ { resolvers => [ $mirror_index ] } ],
+        "new with single mirror resolver"
+    );
+    test_search_package( $index );
+};
+
 done_testing;
 # COPYRIGHT
 # vim: ts=4 sts=4 sw=4 et:
