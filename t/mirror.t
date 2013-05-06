@@ -97,6 +97,16 @@ subtest 'search package' => sub {
     test_search_package( $index );
 };
 
+subtest 'find author' => sub {
+    my $index = new_mirror_index;
+    test_find_author( $index );
+};
+
+subtest 'search author' => sub {
+    my $index = new_mirror_index;
+    test_search_author( $index );
+};
+
 done_testing;
 # COPYRIGHT
 # vim: ts=4 sts=4 sw=4 et:

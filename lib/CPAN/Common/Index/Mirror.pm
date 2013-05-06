@@ -46,6 +46,11 @@ my %INDICES = (
     packages => 'modules/02packages.details.txt.gz',
 );
 
+# XXX refactor out from subs below
+my %TEST_GENERATORS = (
+
+);
+
 sub cached_package {
     my ($self) = @_;
     my $package = File::Spec->catfile( $self->cache,
@@ -87,7 +92,7 @@ sub index_age {
 
 sub search_packages {
     my ( $self, $args ) = @_;
-    Carp::croak("Argument to search_modules must be hash reference")
+    Carp::croak("Argument to search_packages must be hash reference")
       unless ref $args eq 'HASH';
 
     my $index_path = $self->cached_package;
@@ -101,7 +106,8 @@ sub search_packages {
             $rules->{package} = $args->{package};
         }
         else {
-            my $re = ref $args->{package} eq 'Regexp' ? $args->{package} : qr/\A\Q$args->{package}\E\z/;
+            my $re =
+              ref $args->{package} eq 'Regexp' ? $args->{package} : qr/\A\Q$args->{package}\E\z/;
             $rules->{package} = sub { $_[0] =~ $re };
         }
     }
@@ -147,7 +153,14 @@ sub search_packages {
     return wantarray ? @found : $found[0];
 }
 
-sub search_authors { ... }
+sub search_authors {
+    my ( $self, $args ) = @_;
+    Carp::croak("Argument to search_authors must be hash reference")
+      unless ref $args eq 'HASH';
+
+    my $index_path = $self->cached_mailrc;
+    die "Can't read $index_path" unless -r $index_path;
+}
 
 sub _xform {
     my @fields = split " ", $_[0], 2;

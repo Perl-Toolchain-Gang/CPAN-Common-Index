@@ -10,6 +10,8 @@ our @ISA    = qw/Exporter/;
 our @EXPORT = qw(
   test_find_package
   test_search_package
+  test_find_author
+  test_search_author
 );
 
 sub test_find_package {
@@ -88,6 +90,46 @@ sub test_search_package {
 
     for my $c (@cases) {
         my @got = $index->search_packages( $c->{query} );
+        is_deeply( \@got, $c->{result}, $c->{label} ) or diag explain \@got;
+    }
+}
+
+sub test_find_author {
+    my $index = shift;
+
+    my @cases = (
+        {
+            id       => 'DAGOLDEN',
+            fullname => 'David Golde',
+            email    => 'dagolden@cpan.org',
+        },
+    );
+
+    for my $c (@cases) {
+        my $got = $index->search_authors( { id => $c->{id} } );
+        is_deeply( $got, $c, "find $c->{id}" );
+    }
+}
+
+sub test_search_author {
+    my $index = shift;
+
+    my @cases = (
+        {
+            label  => 'query on id',
+            query  => { id => qr/DAGOLD/, },
+            result => [
+                {
+                    id       => 'DAGOLDEN',
+                    fullname => 'David Golde',
+                    email    => 'dagolden@cpan.org',
+                },
+            ],
+        },
+    );
+
+    for my $c (@cases) {
+        my @got = $index->search_authors( $c->{query} );
         is_deeply( \@got, $c->{result}, $c->{label} ) or diag explain \@got;
     }
 }
