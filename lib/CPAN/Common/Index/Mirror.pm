@@ -8,6 +8,7 @@ package CPAN::Common::Index::Mirror;
 
 use parent 'CPAN::Common::Index';
 
+use Carp;
 use CPAN::DistnameInfo;
 use File::Basename ();
 use File::Fetch;
@@ -48,7 +49,30 @@ my %INDICES = (
 
 # XXX refactor out from subs below
 my %TEST_GENERATORS = (
+    regexp => sub {
+        my $arg = shift;
+        my $re = ref $arg eq 'Regexp' ? $arg : qr/\A\Q$arg\E\z/;
+        return sub { $_[0] =~ $re };
+    },
+    version => sub {
+        my $arg = shift;
+        my $v   = version->parse($arg);
+        return sub {
+            eval { version->parse( $_[0] ) == $v };
+        };
+    },
+);
 
+my %QUERY_TYPES = (
+    # package search
+    package => 'regexp',
+    version => 'version',
+    dist    => 'regexp',
+
+    # author search
+    id       => 'regexp', # XXX need to add "alias " first
+    fullname => 'regexp',
+    email    => 'regexp',
 );
 
 sub cached_package {
@@ -101,53 +125,24 @@ sub search_packages {
 
     # Convert scalars or regexps to subs
     my $rules;
-    if ( $args->{package} ) {
-        if ( $args->{package} eq 'CODE' ) {
-            $rules->{package} = $args->{package};
-        }
-        else {
-            my $re =
-              ref $args->{package} eq 'Regexp' ? $args->{package} : qr/\A\Q$args->{package}\E\z/;
-            $rules->{package} = sub { $_[0] =~ $re };
-        }
-    }
-
-    if ( $args->{version} ) {
-        if ( ref $args->{version} eq 'CODE' ) {
-            $rules->{version} = $args->{version};
-        }
-        else {
-            my $v = version->parse( $args->{version} );
-            $rules->{version} = sub {
-                eval { version->parse( $_[0] ) == $v };
-            };
-        }
-    }
-
-    if ( $args->{dist} ) {
-        if ( $args->{dist} eq 'CODE' ) {
-            $rules->{dist} = $args->{dist};
-        }
-        else {
-            my $re = ref $args->{dist} eq 'Regexp' ? $args->{dist} : qr/\A\Q$args->{dist}\E\z/;
-            $rules->{dist} = sub { $_[0] =~ $re };
-        }
+    while ( my ( $k, $v ) = each %$args ) {
+        $rules->{$k} = _rulify( $k, $v );
     }
 
     my @found;
     if ( $args->{package} and ref $args->{package} eq '' ) {
         # binary search 02packages on package
-        my $pos = look * PD, $args->{package}, { xform => \&_xform, fold => 1 };
+        my $pos = look * PD, $args->{package}, { xfrm => \&_xform_package, fold => 1 };
         return if $pos == -1;
         # XXX eventually, loop lines until package doesn't match so we can
         # search an index with unique package+version, not just package
         my $line = <PD>;
-        push @found, _match_line( $line, $rules );
+        push @found, _match_package_line( $line, $rules );
     }
     else {
         # iterate all lines looking for match
         LINE: while ( my $line = <PD> ) {
-            push @found, _match_line( $line, $rules );
+            push @found, _match_package_line( $line, $rules );
         }
     }
     return wantarray ? @found : $found[0];
@@ -160,15 +155,50 @@ sub search_authors {
 
     my $index_path = $self->cached_mailrc;
     die "Can't read $index_path" unless -r $index_path;
+    open my $fh, $index_path or die "Can't open $index_path: $!";
+
+    # Convert scalars or regexps to subs
+    my $rules;
+    while ( my ( $k, $v ) = each %$args ) {
+        $rules->{$k} = _rulify( $k, $v );
+    }
+
+    my @found;
+    if ( $args->{id} and ref $args->{id} eq '' ) {
+        # binary search mailrec on package
+        my $pos = look $fh, $args->{id}, { xfrm => \&_xform_mailrc, fold => 1 };
+        return if $pos == -1;
+        my $line = <$fh>;
+        push @found, _match_mailrc_line( $line, $rules );
+    }
+    else {
+        # iterate all lines looking for match
+        LINE: while ( my $line = <$fh> ) {
+            push @found, _match_mailrc_line( $line, $rules );
+        }
+    }
+    return wantarray ? @found : $found[0];
 }
 
-sub _xform {
+sub _rulify {
+    my ( $key, $arg ) = @_;
+    return $arg if ref($arg) eq 'CODE';
+    return $TEST_GENERATORS{ $QUERY_TYPES{$key} }->($arg);
+}
+
+sub _xform_package {
     my @fields = split " ", $_[0], 2;
     return $fields[0];
 }
 
-sub _match_line {
+sub _xform_mailrc {
+    my @fields = split " ", $_[0], 3;
+    return $fields[1];
+}
+
+sub _match_package_line {
     my ( $line, $rules ) = @_;
+    return unless defined $line;
     my ( $mod, $version, $dist, $comment ) = split " ", $line, 4;
     if ( $rules->{package} ) {
         return unless $rules->{package}->($mod);
@@ -184,6 +214,28 @@ sub _match_line {
         package => $mod,
         version => $version,
         uri     => "cpan:///distfile/$dist",
+    };
+}
+
+sub _match_mailrc_line {
+    my ( $line,     $rules )   = @_;
+    return unless defined $line;
+    my ( $id,       $address ) = $line =~ m{\Aalias\s+(\S+)\s+"(.*)"};
+    my ( $fullname, $email )   = $address =~ m{([^<]+)<([^>]+)>};
+    $fullname =~ s/\s*$//;
+    if ( $rules->{id} ) {
+        return unless $rules->{id}->($id);
+    }
+    if ( $rules->{fullname} ) {
+        return unless $rules->{fullname}->($fullname);
+    }
+    if ( $rules->{email} ) {
+        return unless $rules->{email}->($email);
+    }
+    return {
+        id       => $id,
+        fullname => $fullname,
+        email    => $email,
     };
 }
 

@@ -100,7 +100,7 @@ sub test_find_author {
     my @cases = (
         {
             id       => 'DAGOLDEN',
-            fullname => 'David Golde',
+            fullname => 'David Golden',
             email    => 'dagolden@cpan.org',
         },
     );
@@ -121,7 +121,7 @@ sub test_search_author {
             result => [
                 {
                     id       => 'DAGOLDEN',
-                    fullname => 'David Golde',
+                    fullname => 'David Golden',
                     email    => 'dagolden@cpan.org',
                 },
             ],
