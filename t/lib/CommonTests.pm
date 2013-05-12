@@ -99,6 +99,31 @@ sub test_find_author {
 
     my @cases = (
         {
+            query    => { id => 'DAGOLDEN' },
+            id       => 'DAGOLDEN',
+            fullname => 'David Golden',
+            email    => 'dagolden@cpan.org',
+        },
+        {
+            query    => { id => 'aashu' },
+            id       => 'AASHU',
+            fullname => 'Ashutosh Sharma',
+            email    => 'CENSORED',
+        },
+        {
+            query    => { id => qr/DAGOL/ },
+            id       => 'DAGOLDEN',
+            fullname => 'David Golden',
+            email    => 'dagolden@cpan.org',
+        },
+        {
+            query    => { email => qr/dagolden/ },
+            id       => 'DAGOLDEN',
+            fullname => 'David Golden',
+            email    => 'dagolden@cpan.org',
+        },
+        {
+            query    => { fullname => qr/Golden$/ },
             id       => 'DAGOLDEN',
             fullname => 'David Golden',
             email    => 'dagolden@cpan.org',
@@ -106,7 +131,8 @@ sub test_find_author {
     );
 
     for my $c (@cases) {
-        my $got = $index->search_authors( { id => $c->{id} } );
+        my $query = delete $c->{query};
+        my $got = $index->search_authors( $query );
         is_deeply( $got, $c, "find $c->{id}" );
     }
 }

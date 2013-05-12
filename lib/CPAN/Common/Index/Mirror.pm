@@ -51,7 +51,7 @@ my %INDICES = (
 my %TEST_GENERATORS = (
     regexp => sub {
         my $arg = shift;
-        my $re = ref $arg eq 'Regexp' ? $arg : qr/\A\Q$arg\E\z/;
+        my $re = ref $arg eq 'Regexp' ? $arg : qr/\A\Q$arg\E\z/i;
         return sub { $_[0] =~ $re };
     },
     version => sub {
