@@ -19,30 +19,46 @@ sub test_find_package {
 
     my @cases = (
         {
-            package => 'File::Marker',
-            version => '0.13',
-            uri     => 'cpan:///distfile/DAGOLDEN/File-Marker-0.13.tar.gz',
+            label  => 'query on package File::Marker',
+            query  => { package => "File::Marker" },
+            result => {
+                package => 'File::Marker',
+                version => '0.13',
+                uri     => 'cpan:///distfile/DAGOLDEN/File-Marker-0.13.tar.gz',
+            },
         },
         {
-            package => 'Dist::Zilla',
-            version => '4.300034',
-            uri     => 'cpan:///distfile/RJBS/Dist-Zilla-4.300034.tar.gz',
+            label  => 'query on package dist::zilla',
+            query  => { package => "dist::zilla" },
+            result => {
+                package => 'Dist::Zilla',
+                version => '4.300034',
+                uri     => 'cpan:///distfile/RJBS/Dist-Zilla-4.300034.tar.gz',
+            },
         },
         {
-            package => 'Moo::Role',
-            version => 'undef',
-            uri     => 'cpan:///distfile/MSTROUT/Moo-1.001000.tar.gz',
+            label  => 'query on package without version ',
+            query  => { package => "Moo::Role" },
+            result => {
+                package => 'Moo::Role',
+                version => 'undef',
+                uri     => 'cpan:///distfile/MSTROUT/Moo-1.001000.tar.gz',
+            },
         },
         {
-            package => 'attributes',
-            version => '0.2',
-            uri     => 'cpan:///distfile/FLORA/perl-5.17.4.tar.bz2',
+            label  => 'query on package in a perl distribution',
+            query  => { package => 'attributes', },
+            result => {
+                package => 'attributes',
+                version => '0.2',
+                uri     => 'cpan:///distfile/FLORA/perl-5.17.4.tar.bz2',
+            },
         },
     );
 
     for my $c (@cases) {
-        my $got = $index->search_packages( { package => $c->{package} } );
-        is_deeply( $got, $c, "find $c->{package}" );
+        my $got = $index->search_packages( $c->{query} );
+        is_deeply( $got, $c->{result}, $c->{label} ) or diag explain $got;
     }
 }
 
@@ -99,41 +115,28 @@ sub test_find_author {
 
     my @cases = (
         {
-            query    => { id => 'DAGOLDEN' },
-            id       => 'DAGOLDEN',
-            fullname => 'David Golden',
-            email    => 'dagolden@cpan.org',
+            label  => 'query on DAGOLDEN',
+            query  => { id => 'DAGOLDEN' },
+            result => {
+                id       => 'DAGOLDEN',
+                fullname => 'David Golden',
+                email    => 'dagolden@cpan.org',
+            },
         },
         {
-            query    => { id => 'aashu' },
-            id       => 'AASHU',
-            fullname => 'Ashutosh Sharma',
-            email    => 'CENSORED',
-        },
-        {
-            query    => { id => qr/DAGOL/ },
-            id       => 'DAGOLDEN',
-            fullname => 'David Golden',
-            email    => 'dagolden@cpan.org',
-        },
-        {
-            query    => { email => qr/dagolden/ },
-            id       => 'DAGOLDEN',
-            fullname => 'David Golden',
-            email    => 'dagolden@cpan.org',
-        },
-        {
-            query    => { fullname => qr/Golden$/ },
-            id       => 'DAGOLDEN',
-            fullname => 'David Golden',
-            email    => 'dagolden@cpan.org',
+            label  => 'query on aashu (with CENSORED email)',
+            query  => { id => 'aashu' },
+            result => {
+                id       => 'AASHU',
+                fullname => 'Ashutosh Sharma',
+                email    => 'CENSORED',
+            },
         },
     );
 
     for my $c (@cases) {
-        my $query = delete $c->{query};
-        my $got = $index->search_authors( $query );
-        is_deeply( $got, $c, "find $c->{id}" );
+        my $got = $index->search_authors( $c->{query} );
+        is_deeply( $got, $c->{result}, $c->{label} ) or diag explain $got;
     }
 }
 
@@ -142,8 +145,30 @@ sub test_search_author {
 
     my @cases = (
         {
-            label  => 'query on id',
+            label  => 'query id on qr/DAGOLD/',
             query  => { id => qr/DAGOLD/, },
+            result => [
+                {
+                    id       => 'DAGOLDEN',
+                    fullname => 'David Golden',
+                    email    => 'dagolden@cpan.org',
+                },
+            ],
+        },
+        {
+            label    => 'query email on qr/dagolden/',
+            query    => { email => qr/dagolden/ },
+            result => [
+                {
+                    id       => 'DAGOLDEN',
+                    fullname => 'David Golden',
+                    email    => 'dagolden@cpan.org',
+                },
+            ],
+        },
+        {
+            label    => 'query fullname on qr/Golden$/',
+            query    => { fullname => qr/Golden$/ },
             result => [
                 {
                     id       => 'DAGOLDEN',
