@@ -71,13 +71,37 @@ subtest "find package" => sub {
     test_find_package( $index );
 
     # test finding darkpan from local
-    my $expected = {
-        'package' => 'ZZZ::Custom',
-        'uri'     => 'cpan:///distfile/LOCAL/ZZZ-Custom-1.2.tar.gz',
-        'version' => '1.2'
-    };
-    my $got = $index->search_packages( { package => 'ZZZ::Custom' } );
-    is_deeply( $got, $expected, "Found custom package" );
+    {
+        my $expected = {
+            'package' => 'ZZZ::Custom',
+            'uri'     => 'cpan:///distfile/LOCAL/ZZZ-Custom-1.2.tar.gz',
+            'version' => '1.2'
+        };
+        my $got = $index->search_packages( { package => 'ZZZ::Custom' } );
+        is_deeply( $got, $expected, "Found custom package" );
+    }
+
+    # test finding something on CPAN, not darkpan
+    {
+        my $expected = {
+            'package' => 'Acme::Bleach',
+            'uri'     => 'cpan:///distfile/DCONWAY/Acme-Bleach-1.150.tar.gz',
+            'version' => '1.150'
+        };
+        my $got = $index->search_packages( { package => 'Acme::Bleach' } );
+        is_deeply( $got, $expected, "Found package only on CPAN" );
+    }
+
+    # test overriding something on CPAN
+    {
+        my $expected = {
+            'package' => 'Acme::Samurai',
+            'uri'     => 'cpan:///distfile/LOCAL/Acme-Samurai-0.02.tar.gz',
+            'version' => '0.02'
+        };
+        my $got = $index->search_packages( { package => 'Acme::Samurai' } );
+        is_deeply( $got, $expected, "Found package overriding CPAN" );
+    }
 };
 
 subtest "search package" => sub {
