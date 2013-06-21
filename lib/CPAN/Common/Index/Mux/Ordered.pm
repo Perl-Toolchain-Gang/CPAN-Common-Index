@@ -10,9 +10,29 @@ use parent 'CPAN::Common::Index';
 
 use Module::Load ();
 
+=attr resolvers
+
+    An array reference of CPAN::Common::Index::* objects
+
+=cut
+
 sub attributes {
     return { resolvers => sub { [] }, };
 }
+
+=method assemble
+
+    $index = CPAN::Common::Index::Mux::Ordered->assemble(
+        MetaDB => {},
+        Mirror => { mirror => "http://www.cpan.org" },
+    );
+
+This class method provides a shorthand for constructing a multiplexer.
+The arguments must be pairs of subclass suffixes and arguments.  For
+example, "MetaDB" means to use "CPAN::Common::Index::MetaDB".  Empty
+arguments must be given as an empty hash reference.
+
+=cut
 
 sub assemble {
     my ( $class, @backends ) = @_;
@@ -49,7 +69,7 @@ sub validate_attributes {
 # are stacked; only one result for any given package (or package/version)
 sub search_packages {
     my ( $self, $args ) = @_;
-    Carp::croak("Argument to search_modules must be hash reference")
+    Carp::croak("Argument to search_packages must be hash reference")
       unless ref $args eq 'HASH';
     my @found;
     if ( $args->{name} and ref $args->{name} eq '' ) {
@@ -73,9 +93,37 @@ sub search_packages {
     return wantarray ? @found : $found[0];
 }
 
+# have to think carefully about the sematics of regex search when indices
+# are stacked; only one result for any given package (or package/version)
+sub search_authors {
+    my ( $self, $args ) = @_;
+    Carp::croak("Argument to search_authors must be hash reference")
+      unless ref $args eq 'HASH';
+    my @found;
+    if ( $args->{name} and ref $args->{name} eq '' ) {
+        # looking for exact match, so we just want the first hit
+        for my $source ( @{ $self->resolvers } ) {
+            if ( my @result = $source->search_authors($args) ) {
+                # XXX double check against remaining $args
+                push @found, @result;
+                last;
+            }
+        }
+    }
+    else {
+        # accumulate results from all resolvers
+        my %seen;
+        for my $source ( @{ $self->resolvers } ) {
+            my @result = $source->search_authors($args);
+            push @found, grep { !$seen{ $_->{package} }++ } @result;
+        }
+    }
+    return wantarray ? @found : $found[0];
+}
+
 __PACKAGE__->_build_accessors;
 
-=for Pod::Coverage method_names_here
+=for Pod::Coverage attributes validate_attributes search_packages search_authors
 
 =head1 SYNOPSIS
 
