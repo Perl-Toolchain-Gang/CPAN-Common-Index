@@ -18,6 +18,17 @@ use Search::Dict;
 use Tie::Handle::SkipHeader;
 use URI;
 
+=attr mirror
+
+URI to a CPAN mirror.  Defaults to C<http://www.cpan.org/>.
+
+=attr cache
+
+Path to a local directory to store copies of the source indices.  Defaults to a
+temporary directory if not specified.
+
+=cut
+
 sub attributes {
     return {
         cache  => sub { File::Temp->newdir },
@@ -218,7 +229,7 @@ sub _match_package_line {
 }
 
 sub _match_mailrc_line {
-    my ( $line,     $rules )   = @_;
+    my ( $line, $rules ) = @_;
     return unless defined $line;
     my ( $id,       $address ) = $line =~ m{\Aalias\s+(\S+)\s+"(.*)"};
     my ( $fullname, $email )   = $address =~ m{([^<]+)<([^>]+)>};
@@ -241,24 +252,28 @@ sub _match_mailrc_line {
 
 __PACKAGE__->_build_accessors;
 
-=for Pod::Coverage method_names_here
+=for Pod::Coverage attributes validate_attributes search_packages search_authors
+cached_package cached_mailrc
 
 =head1 SYNOPSIS
 
   use CPAN::Common::Index::Mirror;
 
+  # default mirror is http://www.cpan.org/
+  $index = CPAN::Common::Index::Mirror->new;
+
+  # custom mirror
+  $index = CPAN::Common::Index::Mirror->new(
+    mirror => "http://cpan.cpantesters.org"
+  );
+
 =head1 DESCRIPTION
 
-This module might be cool, but you'd never know it from the lack
-of documentation.
+This module implements a CPAN::Common::Index that retrieves and searches
+02packages.details.txt and 01mailrc.txt indices.
 
-=head1 USAGE
-
-Good luck!
-
-=head1 SEE ALSO
-
-Maybe other modules do related things.
+The default mirror is L<http://www.cpan.org/>.  This is a globally balanced
+fast mirror and is a great choice if you don't have a local fast mirror.
 
 =cut
 

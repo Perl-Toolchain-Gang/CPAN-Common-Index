@@ -12,6 +12,19 @@ use Carp;
 use IO::Uncompress::Gunzip ();
 use Path::Tiny;
 
+=attr source (REQUIRED)
+
+Path to a local file in the form of 02packages.details.txt.  It may
+be compressed with a ".gz" suffix or it may be uncompressed.
+
+=attr cache
+
+Path to a local directory to store a (possibly uncompressed) copy
+of the source index.  Defaults to a temporary directory if not
+specified.
+
+=cut
+
 sub attributes {
     my $attrs = $_[0]->SUPER::attributes;
     delete $attrs->{mirror};
@@ -55,7 +68,7 @@ sub refresh_index {
     else {
         my $dest = path( $self->cache, $source->basename );
         $source->copy($dest)
-          if ! -e $dest || $source->stat->mtime > $dest->stat->mtime;
+          if !-e $dest || $source->stat->mtime > $dest->stat->mtime;
     }
     return 1;
 }
@@ -64,24 +77,23 @@ sub search_authors { return }; # this package handles packages only
 
 __PACKAGE__->_build_accessors;
 
-=for Pod::Coverage method_names_here
+=for Pod::Coverage attributes validate_attributes search_packages search_authors
+cached_package
 
 =head1 SYNOPSIS
 
   use CPAN::Common::Index::LocalPackage;
 
+  $index = CPAN::Common::Index::LocalPackage->new(
+    source => "mypackages.details.txt",
+  );
+
 =head1 DESCRIPTION
 
-This module might be cool, but you'd never know it from the lack
-of documentation.
+This module implements a CPAN::Common::Index that searches for packages in a local
+index file in the same form as the CPAN 02packages.details.txt file.
 
-=head1 USAGE
-
-Good luck!
-
-=head1 SEE ALSO
-
-Maybe other modules do related things.
+There is no support for searching on authors.
 
 =cut
 

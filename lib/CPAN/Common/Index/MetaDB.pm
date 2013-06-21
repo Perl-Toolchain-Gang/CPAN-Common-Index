@@ -12,10 +12,15 @@ use Carp;
 use CPAN::Meta::YAML;
 use HTTP::Tiny;
 
+=attr uri
+
+A URI for the endpoint of a CPAN MetaDB server. The
+default is L<http://cpanmetadb.plackperl.org/v1.0/>.
+
+=cut
+
 sub attributes {
-    return {
-        uri => "http://cpanmetadb.plackperl.org/v1.0/"
-    };
+    return { uri => "http://cpanmetadb.plackperl.org/v1.0/" };
 }
 
 sub validate_attributes {
@@ -35,15 +40,16 @@ sub search_packages {
       unless ref $args eq 'HASH';
 
     # only support direct package query
-    return unless keys %$args == 1 && exists $args->{package} && ref $args->{package} eq '';
+    return
+      unless keys %$args == 1 && exists $args->{package} && ref $args->{package} eq '';
 
     my $mod = $args->{package};
-    my $res = HTTP::Tiny->new->get($self->uri . "package/$mod");
+    my $res = HTTP::Tiny->new->get( $self->uri . "package/$mod" );
     return unless $res->{success};
 
-    if ( my $yaml = CPAN::Meta::YAML->read_string($res->{content}) ) {
+    if ( my $yaml = CPAN::Meta::YAML->read_string( $res->{content} ) ) {
         my $meta = $yaml->[0];
-        if ($meta && $meta->{distfile}) {
+        if ( $meta && $meta->{distfile} ) {
             my $file = $meta->{distfile};
             $file =~ s{^./../}{}; # strip leading
             return {
@@ -57,30 +63,27 @@ sub search_packages {
     return;
 }
 
-sub index_age { return time }; # pretend always current
+sub index_age { return time };    # pretend always current
 
-sub search_authors { return }; # not supported
+sub search_authors { return };    # not supported
 
 __PACKAGE__->_build_accessors;
 
-=for Pod::Coverage method_names_here
+=for Pod::Coverage attributes validate_attributes search_packages search_authors
 
 =head1 SYNOPSIS
 
   use CPAN::Common::Index::MetaDB;
 
+  $index = CPAN::Common::Index::MetaDB->new;
+
 =head1 DESCRIPTION
 
-This module might be cool, but you'd never know it from the lack
-of documentation.
+This module implements a CPAN::Common::Index that searches for packages against
+the same CPAN MetaDB API used by L<cpanminus>.
 
-=head1 USAGE
-
-Good luck!
-
-=head1 SEE ALSO
-
-Maybe other modules do related things.
+There is no support for advanced package queries or searching authors.  It just
+takes a package name and returns the corresponding version and distribution.
 
 =cut
 

@@ -15,12 +15,12 @@ version 0.001
     use CPAN::Common::Index::Mux::Ordered;
     use Data::Dumper;
 
-    my $index = CPAN::Common::Index::Mux::Ordered->assemble(
+    $index = CPAN::Common::Index::Mux::Ordered->assemble(
         MetaDB => {},
         Mirror => { mirror => "http://cpan.cpantesters.org" },
     );
 
-    my $result = $index->search_packages( { package => "Moose" } );
+    $result = $index->search_packages( { package => "Moose" } );
 
     print Dumper($result);
 
@@ -144,10 +144,6 @@ The result must be formed as follows:
 
 The C<email> field may not reflect an actual email address.  The 01mailrc file
 on CPAN often shows "CENSORED" when email addresses are concealed.
-
-#--------------------------------------------------------------------------#
-# stub methods
-#--------------------------------------------------------------------------#
 
 =head2 index_age
 

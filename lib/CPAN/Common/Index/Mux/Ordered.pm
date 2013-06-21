@@ -127,20 +127,21 @@ __PACKAGE__->_build_accessors;
 
 =head1 SYNOPSIS
 
-  use CPAN::Common::Index::Mux::Ordered;
+    use CPAN::Common::Index::Mux::Ordered;
+    use Data::Dumper;
+
+    $index = CPAN::Common::Index::Mux::Ordered->assemble(
+        MetaDB => {},
+        Mirror => { mirror => "http://cpan.cpantesters.org" },
+    );
 
 =head1 DESCRIPTION
 
-This module might be cool, but you'd never know it from the lack
-of documentation.
+This module multiplexes multiple CPAN::Common::Index objects, returning
+results in order.
 
-=head1 USAGE
-
-Good luck!
-
-=head1 SEE ALSO
-
-Maybe other modules do related things.
+For exact match queries, the first result is returned. For search queries,
+results from each index object are concatenated.
 
 =cut
 

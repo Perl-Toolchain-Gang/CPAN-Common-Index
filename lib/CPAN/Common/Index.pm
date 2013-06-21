@@ -200,12 +200,12 @@ sub validate_attributes { 1 }
     use CPAN::Common::Index::Mux::Ordered;
     use Data::Dumper;
 
-    my $index = CPAN::Common::Index::Mux::Ordered->assemble(
+    $index = CPAN::Common::Index::Mux::Ordered->assemble(
         MetaDB => {},
         Mirror => { mirror => "http://cpan.cpantesters.org" },
     );
 
-    my $result = $index->search_packages( { package => "Moose" } );
+    $result = $index->search_packages( { package => "Moose" } );
 
     print Dumper($result);
 
