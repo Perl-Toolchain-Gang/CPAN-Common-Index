@@ -13,13 +13,19 @@ use CommonTests;
 
 my $cwd         = getcwd;
 my $test_mirror = "file:///$cwd/t/CPAN";
+my $local_pkg   = "t/CUSTOM/uncompressed";
 my $cache       = File::Temp->newdir;
 
 require_ok("CPAN::Common::Index::Mirror");
+require_ok("CPAN::Common::Index::LocalPackage");
 require_ok("CPAN::Common::Index::Mux::Ordered");
 
 my $mirror_index = CPAN::Common::Index::Mirror->new(
     { cache => $cache, mirror => $test_mirror }
+);
+
+my $local_index = CPAN::Common::Index::LocalPackage->new(
+    { cache => $cache, source => $local_pkg }
 );
 
 subtest "constructor tests" => sub {
@@ -59,10 +65,19 @@ subtest "constructor tests" => sub {
 
 subtest "find package" => sub {
     my $index = new_ok(
-        'CPAN::Common::Index::Mux::Ordered' => [ { resolvers => [ $mirror_index ] } ],
+        'CPAN::Common::Index::Mux::Ordered' => [ { resolvers => [ $local_index, $mirror_index ] } ],
         "new with single mirror resolver"
     );
     test_find_package( $index );
+
+    # test finding darkpan from local
+    my $expected = {
+        'package' => 'ZZZ::Custom',
+        'uri'     => 'cpan:///distfile/LOCAL/ZZZ-Custom-1.2.tar.gz',
+        'version' => '1.2'
+    };
+    my $got = $index->search_packages( { package => 'ZZZ::Custom' } );
+    is_deeply( $got, $expected, "Found custom package" );
 };
 
 subtest "search package" => sub {
