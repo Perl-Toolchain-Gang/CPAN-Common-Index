@@ -75,7 +75,7 @@ sub validate_attributes { 1 }
 # search_modules: data from 02packages.details.txt
 # arguments: key/value pairs;  keys can be 'package',
 # 'distribution', 'version' or 'author'.
-# value can be exact or regex; should return URL's
+# value can be exact or regex; should return URI's
 # for location
 
 # search_authors: returns data from 01mailrc.txt
@@ -105,7 +105,23 @@ for my $m (@abstract_methods) {
 
 =head1 SYNOPSIS
 
-  use CPAN::Common::Index;
+    use CPAN::Common::Index::Mux::Ordered;
+    use Data::Dumper;
+
+    my $index = CPAN::Common::Index::Mux::Ordered->assemble(
+        MetaDB => {},
+        Mirror => { mirror => "http://cpan.cpantesters.org" },
+    );
+
+    my $result = $index->search_packages( { package => "Moose" } );
+
+    print Dumper($result);
+
+    # {
+    #   package => 'MOOSE',
+    #   version => '2.0802',
+    #   uri     => "cpan:///distfile/ETHER/Moose-2.0802.tar.gz"
+    # }
 
 =head1 DESCRIPTION
 

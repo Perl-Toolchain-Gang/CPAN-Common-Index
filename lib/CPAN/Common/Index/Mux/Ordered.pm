@@ -21,8 +21,8 @@ sub assemble {
 
     while (@backends) {
         my ( $subclass, $config ) = splice @backends, 0, 2;
-        my $full_class = "${class}::${subclass}";
-        eval { Module::Load::load($full_class) }
+        my $full_class = "CPAN::Common::Index::${subclass}";
+        eval { Module::Load::load($full_class); 1 }
           or Carp::croak($@);
         my $object = $full_class->new($config);
         push @resolvers, $object;
