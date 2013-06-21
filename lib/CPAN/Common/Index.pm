@@ -142,6 +142,8 @@ The result must be formed as follows:
 The C<email> field may not reflect an actual email address.  The 01mailrc file
 on CPAN often shows "CENSORED" when email addresses are concealed.
 
+=cut
+
 #--------------------------------------------------------------------------#
 # stub methods
 #--------------------------------------------------------------------------#
@@ -188,7 +190,6 @@ called by application code.  By default, it does nothing.
 =cut
 
 sub validate_attributes { 1 }
-
 
 1;
 
