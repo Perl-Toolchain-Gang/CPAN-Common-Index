@@ -57,6 +57,8 @@ sub search_packages {
     return;
 }
 
+sub index_age { return time }; # pretend always current
+
 sub search_authors { return }; # not supported
 
 __PACKAGE__->_build_accessors;
