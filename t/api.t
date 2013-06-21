@@ -14,8 +14,6 @@ my @backends = map { "CPAN::Common::Index::$_" } qw(
 my @required = qw(
   search_packages
   search_authors
-  index_age
-  refresh_index
 );
 
 for my $mod (@backends) {

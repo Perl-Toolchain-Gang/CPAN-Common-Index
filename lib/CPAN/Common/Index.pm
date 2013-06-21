@@ -29,7 +29,7 @@ sub _build_accessors {
 
 =method new
 
-    my $index = $class->new( \%args );
+    $index = $class->new( \%args );
 
 The constructor arguments must be given a hash reference.  The specific
 keys allowed are defined by each backend.
@@ -68,69 +68,8 @@ sub new {
 }
 
 #--------------------------------------------------------------------------#
-# stub methods
+# Document abstract methods
 #--------------------------------------------------------------------------#
-
-=method refresh_index
-
-    $index->refresh_index;
-
-This ensures the index source is up to date.  For example, a remote
-mirror file would be re-downloaded.  For some backends, this may
-do nothing.
-
-=cut
-
-sub refresh_index { 1 }
-
-=method validate_attributes
-
-    $self->validate_attributes;
-
-This is called by the constructor to validate any arguments.  Subclasses
-should override the default one to perform validation.  It should not be
-called by application code.
-
-=cut
-
-sub validate_attributes { 1 }
-
-1;
-
-=for Pod::Coverage method_names_here
-
-=head1 SYNOPSIS
-
-    use CPAN::Common::Index::Mux::Ordered;
-    use Data::Dumper;
-
-    my $index = CPAN::Common::Index::Mux::Ordered->assemble(
-        MetaDB => {},
-        Mirror => { mirror => "http://cpan.cpantesters.org" },
-    );
-
-    my $result = $index->search_packages( { package => "Moose" } );
-
-    print Dumper($result);
-
-    # {
-    #   package => 'MOOSE',
-    #   version => '2.0802',
-    #   uri     => "cpan:///distfile/ETHER/Moose-2.0802.tar.gz"
-    # }
-
-=head1 DESCRIPTION
-
-This module provides a common library for working with a variety of CPAN index
-services.  It is intentionally minimalist, trying to use as few non-core
-modules as possible.
-
-The C<CPAN::Common::Index> module is an abstract base class that defines a
-common API.  Individual backends deliver the API for a particular index.
-
-As shown in the SYNOPSIS, one interesting application is multiplexing -- using
-different index backends, querying each in turn, and returning the first
-result.
 
 =method search_packages (ABSTRACT)
 
@@ -203,19 +142,90 @@ The result must be formed as follows:
 The C<email> field may not reflect an actual email address.  The 01mailrc file
 on CPAN often shows "CENSORED" when email addresses are concealed.
 
-=method index_age (ABSTRACT)
+#--------------------------------------------------------------------------#
+# stub methods
+#--------------------------------------------------------------------------#
+
+=method index_age
 
     $epoch = $index->index_age;
 
 Returns the modification time of the index in epoch seconds.  This may not make sense
-for some backends, in which case they can return the current time.
+for some backends.  By default it returns the current time.
 
-=method refresh_index (ABSTRACT)
+=cut
+
+sub index_age { time }
+
+=method refresh_index
 
     $index->refresh_index;
 
-Requests that the index object get a newer copy of the index.  This may not make sense
-for some backends, in which case they can just return a true value.
+This ensures the index source is up to date.  For example, a remote
+mirror file would be re-downloaded.  By default, it does nothing.
+
+=cut
+
+sub refresh_index { 1 }
+
+=method attributes
+
+Return attributes and default values as a hash reference.  By default
+returns an empty hash reference.
+
+=cut
+
+sub attributes { {} }
+
+=method validate_attributes
+
+    $self->validate_attributes;
+
+This is called by the constructor to validate any arguments.  Subclasses
+should override the default one to perform validation.  It should not be
+called by application code.  By default, it does nothing.
+
+=cut
+
+sub validate_attributes { 1 }
+
+
+1;
+
+=for Pod::Coverage method_names_here
+
+=head1 SYNOPSIS
+
+    use CPAN::Common::Index::Mux::Ordered;
+    use Data::Dumper;
+
+    my $index = CPAN::Common::Index::Mux::Ordered->assemble(
+        MetaDB => {},
+        Mirror => { mirror => "http://cpan.cpantesters.org" },
+    );
+
+    my $result = $index->search_packages( { package => "Moose" } );
+
+    print Dumper($result);
+
+    # {
+    #   package => 'MOOSE',
+    #   version => '2.0802',
+    #   uri     => "cpan:///distfile/ETHER/Moose-2.0802.tar.gz"
+    # }
+
+=head1 DESCRIPTION
+
+This module provides a common library for working with a variety of CPAN index
+services.  It is intentionally minimalist, trying to use as few non-core
+modules as possible.
+
+The C<CPAN::Common::Index> module is an abstract base class that defines a
+common API.  Individual backends deliver the API for a particular index.
+
+As shown in the SYNOPSIS, one interesting application is multiplexing -- using
+different index backends, querying each in turn, and returning the first
+result.
 
 =cut
 

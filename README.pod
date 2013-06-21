@@ -47,26 +47,10 @@ result.
 
 =head2 new
 
-    my $index = $class->new( \%args );
+    $index = $class->new( \%args );
 
 The constructor arguments must be given a hash reference.  The specific
 keys allowed are defined by each backend.
-
-=head2 refresh_index
-
-    $index->refresh_index;
-
-This ensures the index source is up to date.  For example, a remote
-mirror file would be re-downloaded.  For some backends, this may
-do nothing.
-
-=head2 validate_attributes
-
-    $self->validate_attributes;
-
-This is called by the constructor to validate any arguments.  Subclasses
-should override the default one to perform validation.  It should not be
-called by application code.
 
 =head2 search_packages (ABSTRACT)
 
@@ -161,19 +145,36 @@ The result must be formed as follows:
 The C<email> field may not reflect an actual email address.  The 01mailrc file
 on CPAN often shows "CENSORED" when email addresses are concealed.
 
-=head2 index_age (ABSTRACT)
+#--------------------------------------------------------------------------#
+# stub methods
+#--------------------------------------------------------------------------#
+
+=head2 index_age
 
     $epoch = $index->index_age;
 
 Returns the modification time of the index in epoch seconds.  This may not make sense
-for some backends, in which case they can return the current time.
+for some backends.  By default it returns the current time.
 
-=head2 refresh_index (ABSTRACT)
+=head2 refresh_index
 
     $index->refresh_index;
 
-Requests that the index object get a newer copy of the index.  This may not make sense
-for some backends, in which case they can just return a true value.
+This ensures the index source is up to date.  For example, a remote
+mirror file would be re-downloaded.  By default, it does nothing.
+
+=head2 attributes
+
+Return attributes and default values as a hash reference.  By default
+returns an empty hash reference.
+
+=head2 validate_attributes
+
+    $self->validate_attributes;
+
+This is called by the constructor to validate any arguments.  Subclasses
+should override the default one to perform validation.  It should not be
+called by application code.  By default, it does nothing.
 
 =for Pod::Coverage method_names_here
 
