@@ -35,7 +35,7 @@ sub validate_attributes {
 
 sub cached_package {
     my ($self) = @_;
-    my $package = path( $self->cache, File::Basename::basename( $self->source ) );
+    my $package = path( $self->cache, path( $self->source )->basename );
     $package =~ s/\.gz$//;
     $self->refresh_index unless -r $package;
     return $package;
@@ -55,7 +55,7 @@ sub refresh_index {
     else {
         my $dest = path( $self->cache, $source->basename );
         $source->copy($dest)
-          if $source->stat->mtime > $dest->stat->mtime;
+          if ! -e $dest || $source->stat->mtime > $dest->stat->mtime;
     }
     return 1;
 }

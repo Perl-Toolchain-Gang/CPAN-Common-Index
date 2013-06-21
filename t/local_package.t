@@ -15,12 +15,21 @@ use CommonTests;
 my $cwd         = getcwd;
 my $cache       = Path::Tiny->tempdir;
 my $localgz     = path(qw/t CUSTOM mypackages.gz/);
+my $local       = path(qw/t CUSTOM uncompressed/);
 my $packages    = "mypackages";
+my $uncompressed = "uncompressed";
 
 sub new_local_index {
     my $index = new_ok(
         'CPAN::Common::Index::LocalPackage' => [ { cache => $cache, source => $localgz } ],
         "new with cache and local gz"
+    );
+}
+
+sub new_uncompressed_local_index {
+    my $index = new_ok(
+        'CPAN::Common::Index::LocalPackage' => [ { cache => $cache, source => $local } ],
+        "new with cache and local uncompressed"
     );
 }
 
@@ -49,6 +58,9 @@ subtest "constructor tests" => sub {
 
     # both specified
     new_local_index;
+
+    # uncompressed variant
+    new_uncompressed_local_index;
 };
 
 subtest 'refresh and unpack index files' => sub {
@@ -59,6 +71,16 @@ subtest 'refresh and unpack index files' => sub {
     ok( $index->refresh_index, "refreshed index" );
 
     ok( path($cache, $packages)->exists, "$packages in cache" );
+};
+
+subtest 'refresh and unpack uncompressed index files' => sub {
+    my $index = new_uncompressed_local_index;
+
+    ok( ! path($cache, $uncompressed)->exists, "$uncompressed not in cache" );
+
+    ok( $index->refresh_index, "refreshed index" );
+
+    ok( path($cache, $uncompressed)->exists, "$uncompressed in cache" );
 };
 
 # XXX test that files in cache aren't overwritten?
