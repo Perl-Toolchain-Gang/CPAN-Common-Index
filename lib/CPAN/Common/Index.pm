@@ -27,6 +27,15 @@ sub _build_accessors {
 # object construction
 #--------------------------------------------------------------------------#
 
+=method new
+
+    my $index = $class->new( \%args );
+
+The constructor arguments must be given a hash reference.  The specific
+keys allowed are defined by each backend.
+
+=cut
+
 sub new {
     my ( $class, $args ) = @_;
     $args = {} unless defined $args;
@@ -62,42 +71,29 @@ sub new {
 # stub methods
 #--------------------------------------------------------------------------#
 
-# default reload reques does nothing; may not apply to some subclasses
+=method refresh_index
+
+    $index->refresh_index;
+
+This ensures the index source is up to date.  For example, a remote
+mirror file would be re-downloaded.  For some backends, this may
+do nothing.
+
+=cut
+
 sub refresh_index { 1 }
 
-# default validation does nothing
+=method validate_attributes
+
+    $self->validate_attributes;
+
+This is called by the constructor to validate any arguments.  Subclasses
+should override the default one to perform validation.  It should not be
+called by application code.
+
+=cut
+
 sub validate_attributes { 1 }
-
-#--------------------------------------------------------------------------#
-# abstract method: must be implmented in subclasses
-#--------------------------------------------------------------------------#
-
-# search_modules: data from 02packages.details.txt
-# arguments: key/value pairs;  keys can be 'package',
-# 'distribution', 'version' or 'author'.
-# value can be exact or regex; should return URI's
-# for location
-
-# search_authors: returns data from 01mailrc.txt
-# arguments: key/value pairs; keys can be 'author'
-# value can be exact or regex
-
-
-# index_age: how old the index is in seconds
-
-my @abstract_methods = qw(
-  search_packages
-  search_authors
-  index_age
-);
-
-for my $m (@abstract_methods) {
-    no strict 'refs';
-    *{ __PACKAGE__ . "::$m" } = sub {
-        my ($self) = @_;
-        Carp::croak( "$m() not implemented by " . ( ref $self or $self ) );
-    };
-}
 
 1;
 
@@ -125,16 +121,101 @@ for my $m (@abstract_methods) {
 
 =head1 DESCRIPTION
 
-This module might be cool, but you'd never know it from the lack
-of documentation.
+This module provides a common library for working with a variety of CPAN index
+services.  It is intentionally minimalist, trying to use as few non-core
+modules as possible.
 
-=head1 USAGE
+The C<CPAN::Common::Index> module is an abstract base class that defines a
+common API.  Individual backends deliver the API for a particular index.
 
-Good luck!
+As shown in the SYNOPSIS, one interesting application is multiplexing -- using
+different index backends, querying each in turn, and returning the first
+result.
 
-=head1 SEE ALSO
+=method search_packages (ABSTRACT)
 
-Maybe other modules do related things.
+    $result = $index->search_packages( { package => "Moose" });
+    @result = $index->search_packages( \%advanced_query );
+
+Searches the index for a package such as listed in the CPAN
+F<02packages.details.txt> file.  The query must be provided as a hash
+reference.  Valid keys are
+
+=for :list
+* package -- a string, regular expression or code reference
+* version -- a version number or code reference
+* dist -- a string, regular expression or code reference
+
+If the query term is a string or version number, the query will be for an exact
+match.  If a code reference, the code will be called with the value of the
+field for each potential match.  It should return true if it matches.
+
+Not all backends will implement support for all fields or all types of queries.
+If it does not implement either, it should "decline" the query with an empty
+return.
+
+The return should be context aware, returning either a
+single result or a list of results.
+
+The result must be formed as follows:
+
+    {
+      package => 'MOOSE',
+      version => '2.0802',
+      uri     => "cpan:///distfile/ETHER/Moose-2.0802.tar.gz"
+    }
+
+The C<uri> field should a valid URI.  It may be a L<URI::cpan> or any other
+URI.  (It is up to a client to do something useful with any given URI scheme.)
+
+=method search_authors (ABSTRACT)
+
+    $result = $index->search_authors( { id => "DAGOLDEN" });
+    @result = $index->search_authors( \%advanced_query );
+
+Searches the index for author data such as from the CPAN F<01mailrc.txt> file.
+The query must be provided as a hash reference.  Valid keys are
+
+=for :list
+* id -- a string, regular expression or code reference
+* fullname -- a string, regular expression or code reference
+* email -- a string, regular expression or code reference
+
+If the query term is a string, the query will be for an exact match.  If a code
+reference, the code will be called with the value of the field for each
+potential match.  It should return true if it matches.
+
+Not all backends will implement support for all fields or all types of queries.
+If it does not implement either, it should "decline" the query with an empty
+return.
+
+The return should be context aware, returning either a single result or a list
+of results.
+
+The result must be formed as follows:
+
+    {
+        id       => 'DAGOLDEN',
+        fullname => 'David Golden',
+        email    => 'dagolden@cpan.org',
+    }
+
+The C<email> field may not reflect an actual email address.  The 01mailrc file
+on CPAN often shows "CENSORED" when email addresses are concealed.
+
+=method index_age (ABSTRACT)
+
+    $epoch = $index->index_age;
+
+Returns the modification time of the index in epoch seconds.  This may not make sense
+for some backends, in which case they can return the current time.
+
+=method refresh_index (ABSTRACT)
+
+    $index->refresh_index;
+
+Requests that the index object get a newer copy of the index.  This may not make sense
+for some backends, in which case they can just return a true value.
 
 =cut
 
