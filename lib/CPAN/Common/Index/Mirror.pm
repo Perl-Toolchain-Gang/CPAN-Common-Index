@@ -14,7 +14,7 @@ use File::Basename ();
 use File::Fetch;
 use File::Temp 0.19; # newdir
 use IO::Uncompress::Gunzip ();
-use Search::Dict;
+use Search::Dict 1.07;
 use Tie::Handle::SkipHeader;
 use URI;
 
