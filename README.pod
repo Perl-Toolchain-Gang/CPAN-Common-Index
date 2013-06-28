@@ -8,7 +8,7 @@ CPAN::Common::Index - Common library for searching CPAN modules, authors and dis
 
 =head1 VERSION
 
-version 0.001
+version 0.002
 
 =head1 SYNOPSIS
 

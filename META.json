@@ -4,7 +4,7 @@
       "David Golden <dagolden@cpan.org>"
    ],
    "dynamic_config" : 0,
-   "generated_by" : "Dist::Zilla version 4.300034, CPAN::Meta::Converter version 2.131560",
+   "generated_by" : "Dist::Zilla version 4.300035, CPAN::Meta::Converter version 2.131560",
    "license" : [
       "apache_2_0"
    ],
@@ -50,7 +50,7 @@
             "IO::Uncompress::Gunzip" : "0",
             "Module::Load" : "0",
             "Path::Tiny" : "0",
-            "Search::Dict" : "0",
+            "Search::Dict" : "1.07",
             "Tie::Handle::SkipHeader" : "0",
             "URI" : "0",
             "parent" : "0",
@@ -70,30 +70,31 @@
             "Test::Deep" : "0",
             "Test::FailWarnings" : "0",
             "Test::Fatal" : "0",
-            "Test::More" : "0.96"
+            "Test::More" : "0.96",
+            "lib" : "0"
          }
       }
    },
    "provides" : {
       "CPAN::Common::Index" : {
          "file" : "lib/CPAN/Common/Index.pm",
-         "version" : "0.001"
+         "version" : "0.002"
       },
       "CPAN::Common::Index::LocalPackage" : {
          "file" : "lib/CPAN/Common/Index/LocalPackage.pm",
-         "version" : "0.001"
+         "version" : "0.002"
       },
       "CPAN::Common::Index::MetaDB" : {
          "file" : "lib/CPAN/Common/Index/MetaDB.pm",
-         "version" : "0.001"
+         "version" : "0.002"
       },
       "CPAN::Common::Index::Mirror" : {
          "file" : "lib/CPAN/Common/Index/Mirror.pm",
-         "version" : "0.001"
+         "version" : "0.002"
       },
       "CPAN::Common::Index::Mux::Ordered" : {
          "file" : "lib/CPAN/Common/Index/Mux/Ordered.pm",
-         "version" : "0.001"
+         "version" : "0.002"
       }
    },
    "release_status" : "stable",
@@ -108,6 +109,6 @@
          "web" : "https://github.com/dagolden/cpan-common-index"
       }
    },
-   "version" : "0.001"
+   "version" : "0.002"
 }
 

@@ -2,6 +2,10 @@ Revision history for CPAN-Common-Index
 
 {{$NEXT}}
 
+    [FIXED]
+
+    - Bumped Search::Dict prereq
+
 0.001     2013-06-21 18:43:14 America/New_York
 
     - First release
