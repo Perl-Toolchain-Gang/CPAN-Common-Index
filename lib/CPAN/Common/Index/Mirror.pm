@@ -132,7 +132,8 @@ sub search_packages {
 
     my $index_path = $self->cached_package;
     die "Can't read $index_path" unless -r $index_path;
-    tie *PD, 'Tie::Handle::SkipHeader', "<", $index_path;
+    tie *PD, 'Tie::Handle::SkipHeader', "<", $index_path
+        or die "Can't tie $index_path: $!";
 
     # Convert scalars or regexps to subs
     my $rules;
