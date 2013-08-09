@@ -30,11 +30,7 @@ sub test_find_package {
         {
             label  => 'query on package dist::zilla',
             query  => { package => "dist::zilla" },
-            result => {
-                package => 'Dist::Zilla',
-                version => '4.300034',
-                uri     => 'cpan:///distfile/RJBS/Dist-Zilla-4.300034.tar.gz',
-            },
+            result => undef, # should not match case insensitively
         },
         {
             label  => 'query on package without version ',

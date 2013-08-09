@@ -65,6 +65,11 @@ my %TEST_GENERATORS = (
         my $re = ref $arg eq 'Regexp' ? $arg : qr/\A\Q$arg\E\z/i;
         return sub { $_[0] =~ $re };
     },
+    regexp_nocase => sub {
+        my $arg = shift;
+        my $re = ref $arg eq 'Regexp' ? $arg : qr/\A\Q$arg\E\z/;
+        return sub { $_[0] =~ $re };
+    },
     version => sub {
         my $arg = shift;
         my $v   = version->parse($arg);
@@ -76,9 +81,9 @@ my %TEST_GENERATORS = (
 
 my %QUERY_TYPES = (
     # package search
-    package => 'regexp',
+    package => 'regexp_nocase',
     version => 'version',
-    dist    => 'regexp',
+    dist    => 'regexp_nocase',
 
     # author search
     id       => 'regexp', # XXX need to add "alias " first
