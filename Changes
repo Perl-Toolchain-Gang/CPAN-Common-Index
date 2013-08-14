@@ -2,6 +2,12 @@ Revision history for CPAN-Common-Index
 
 {{$NEXT}}
 
+    [FIXED]
+
+    - Package searches are now correctly case sensitive
+
+    - Fixed incorrect synopses
+
 0.002     2013-06-27 22:10:59 America/New_York
 
     [FIXED]

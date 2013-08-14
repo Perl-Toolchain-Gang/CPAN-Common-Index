@@ -4,7 +4,7 @@
       "David Golden <dagolden@cpan.org>"
    ],
    "dynamic_config" : 0,
-   "generated_by" : "Dist::Zilla version 4.300035, CPAN::Meta::Converter version 2.131560",
+   "generated_by" : "Dist::Zilla version 4.300035, CPAN::Meta::Converter version 2.132140",
    "license" : [
       "apache_2_0"
    ],
@@ -78,23 +78,23 @@
    "provides" : {
       "CPAN::Common::Index" : {
          "file" : "lib/CPAN/Common/Index.pm",
-         "version" : "0.002"
+         "version" : "0.003"
       },
       "CPAN::Common::Index::LocalPackage" : {
          "file" : "lib/CPAN/Common/Index/LocalPackage.pm",
-         "version" : "0.002"
+         "version" : "0.003"
       },
       "CPAN::Common::Index::MetaDB" : {
          "file" : "lib/CPAN/Common/Index/MetaDB.pm",
-         "version" : "0.002"
+         "version" : "0.003"
       },
       "CPAN::Common::Index::Mirror" : {
          "file" : "lib/CPAN/Common/Index/Mirror.pm",
-         "version" : "0.002"
+         "version" : "0.003"
       },
       "CPAN::Common::Index::Mux::Ordered" : {
          "file" : "lib/CPAN/Common/Index/Mux/Ordered.pm",
-         "version" : "0.002"
+         "version" : "0.003"
       }
    },
    "release_status" : "stable",
@@ -109,6 +109,10 @@
          "web" : "https://github.com/dagolden/cpan-common-index"
       }
    },
-   "version" : "0.002"
+   "version" : "0.003",
+   "x_authority" : "cpan:DAGOLDEN",
+   "x_contributors" : [
+      "Tatsuhiko Miyagawa <miyagawa@bulknews.net>"
+   ]
 }
 
