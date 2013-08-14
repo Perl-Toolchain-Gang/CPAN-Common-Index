@@ -85,7 +85,7 @@ cached_package
   use CPAN::Common::Index::LocalPackage;
 
   $index = CPAN::Common::Index::LocalPackage->new(
-    source => "mypackages.details.txt",
+    { source => "mypackages.details.txt" }
   );
 
 =head1 DESCRIPTION

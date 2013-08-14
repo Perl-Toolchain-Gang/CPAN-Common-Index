@@ -270,7 +270,7 @@ cached_package cached_mailrc
 
   # custom mirror
   $index = CPAN::Common::Index::Mirror->new(
-    mirror => "http://cpan.cpantesters.org"
+    { mirror => "http://cpan.cpantesters.org" }
   );
 
 =head1 DESCRIPTION
