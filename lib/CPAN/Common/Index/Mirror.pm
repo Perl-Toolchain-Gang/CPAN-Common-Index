@@ -60,12 +60,12 @@ my %INDICES = (
 
 # XXX refactor out from subs below
 my %TEST_GENERATORS = (
-    regexp => sub {
+    regexp_nocase => sub {
         my $arg = shift;
         my $re = ref $arg eq 'Regexp' ? $arg : qr/\A\Q$arg\E\z/i;
         return sub { $_[0] =~ $re };
     },
-    regexp_nocase => sub {
+    regexp => sub {
         my $arg = shift;
         my $re = ref $arg eq 'Regexp' ? $arg : qr/\A\Q$arg\E\z/;
         return sub { $_[0] =~ $re };
@@ -81,14 +81,14 @@ my %TEST_GENERATORS = (
 
 my %QUERY_TYPES = (
     # package search
-    package => 'regexp_nocase',
+    package => 'regexp',
     version => 'version',
-    dist    => 'regexp_nocase',
+    dist    => 'regexp',
 
     # author search
-    id       => 'regexp', # XXX need to add "alias " first
-    fullname => 'regexp',
-    email    => 'regexp',
+    id       => 'regexp_nocase', # XXX need to add "alias " first
+    fullname => 'regexp_nocase',
+    email    => 'regexp_nocase',
 );
 
 sub cached_package {
