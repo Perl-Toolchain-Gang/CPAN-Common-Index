@@ -34,7 +34,7 @@ subtest "constructor tests" => sub {
     # unknown argument
     eval { CPAN::Common::Index::MetaDB->new( { foo => 'bar' } ) };
     like(
-        $@ => qr/Unknown arguments to new\(\): foo/,
+        $@ => qr/Invalid .*? foo/,
         "Unknown argument dies with error"
     );
 

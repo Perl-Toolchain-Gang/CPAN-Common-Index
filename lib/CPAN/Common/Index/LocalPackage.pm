@@ -8,6 +8,8 @@ package CPAN::Common::Index::LocalPackage;
 
 use parent 'CPAN::Common::Index::Mirror';
 
+use Class::Tiny qw/source/;
+
 use Carp;
 use IO::Uncompress::Gunzip ();
 use Path::Tiny;
@@ -25,15 +27,8 @@ specified.
 
 =cut
 
-sub attributes {
-    my $attrs = $_[0]->SUPER::attributes;
-    delete $attrs->{mirror};
-    $attrs->{source} = undef;
-    return $attrs;
-}
-
-sub validate_attributes {
-    my ($self) = @_;
+sub BUILD {
+    my $self = shift;
 
     my $file = $self->source;
     if ( !defined $file ) {
@@ -43,7 +38,7 @@ sub validate_attributes {
         Carp::croak("index file '$file' does not exist");
     }
 
-    return 1;
+    return;
 }
 
 sub cached_package {
@@ -75,7 +70,7 @@ sub refresh_index {
 
 sub search_authors { return }; # this package handles packages only
 
-__PACKAGE__->_build_accessors;
+1;
 
 =for Pod::Coverage attributes validate_attributes search_packages search_authors
 cached_package

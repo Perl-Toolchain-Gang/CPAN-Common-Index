@@ -8,64 +8,7 @@ package CPAN::Common::Index;
 
 use Carp ();
 
-#--------------------------------------------------------------------------#
-# class construction
-#--------------------------------------------------------------------------#
-
-sub _build_accessors {
-    my $class = shift;
-    for my $k ( keys %{ $class->attributes } ) {
-        no strict 'refs';
-        *{ $class . "::$k" } = sub {
-            return @_ > 1 ? $_[0]->{$k} = $_[1] : $_[0]->{$k};
-        };
-    }
-    return 1; # so it can be last line of modules
-}
-
-#--------------------------------------------------------------------------#
-# object construction
-#--------------------------------------------------------------------------#
-
-=method new
-
-    $index = $class->new( \%args );
-
-The constructor arguments must be given a hash reference.  The specific
-keys allowed are defined by each backend.
-
-=cut
-
-sub new {
-    my ( $class, $args ) = @_;
-    $args = {} unless defined $args;
-    if ( ref $args ne 'HASH' ) {
-        Carp::croak("Argument to new() must be a hash reference");
-    }
-
-    # for attributes, grab them from args and create accessors if
-    # not already created
-    my %attributes;
-    my $defaults = $class->attributes;
-    for my $k ( keys %$defaults ) {
-        if ( exists $args->{$k} ) {
-            $attributes{$k} = delete $args->{$k};
-        }
-        else {
-            my $d = $defaults->{$k};
-            $attributes{$k} = ref $d eq 'CODE' ? $d->() : $d;
-        }
-    }
-    if ( keys %$args ) {
-        Carp::croak( "Unknown arguments to new(): " . join( " ", keys %$args ) );
-    }
-    my $self = bless \%attributes, $class;
-    eval { $self->validate_attributes };
-    if ( my $err = $@ ) {
-        Carp::croak("Object failed validation: $@");
-    }
-    return $self;
-}
+use Class::Tiny;
 
 #--------------------------------------------------------------------------#
 # Document abstract methods

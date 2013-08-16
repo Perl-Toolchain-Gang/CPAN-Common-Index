@@ -51,16 +51,10 @@ subtest "constructor tests" => sub {
     # unknown argument
     eval { CPAN::Common::Index::Mux::Ordered->new( { foo => 'bar' } ) };
     like(
-        $@ => qr/Unknown arguments to new\(\): foo/,
+        $@ => qr/Invalid .* foo/,
         "Unknown argument dies with error"
     );
 
-    # bad argument
-    eval { CPAN::Common::Index::Mux::Ordered->new( foo => 'bar' ) };
-    like(
-        $@ => qr/Argument to new\(\) must be a hash reference/,
-        "Non hashref argument dies with error"
-    );
 };
 
 subtest "find package" => sub {

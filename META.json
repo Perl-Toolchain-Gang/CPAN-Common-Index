@@ -43,6 +43,7 @@
             "CPAN::DistnameInfo" : "0",
             "CPAN::Meta::YAML" : "0",
             "Carp" : "0",
+            "Class::Tiny" : "0",
             "File::Basename" : "0",
             "File::Fetch" : "0",
             "File::Temp" : "0.19",
@@ -78,23 +79,23 @@
    "provides" : {
       "CPAN::Common::Index" : {
          "file" : "lib/CPAN/Common/Index.pm",
-         "version" : "0.003"
+         "version" : "0.004"
       },
       "CPAN::Common::Index::LocalPackage" : {
          "file" : "lib/CPAN/Common/Index/LocalPackage.pm",
-         "version" : "0.003"
+         "version" : "0.004"
       },
       "CPAN::Common::Index::MetaDB" : {
          "file" : "lib/CPAN/Common/Index/MetaDB.pm",
-         "version" : "0.003"
+         "version" : "0.004"
       },
       "CPAN::Common::Index::Mirror" : {
          "file" : "lib/CPAN/Common/Index/Mirror.pm",
-         "version" : "0.003"
+         "version" : "0.004"
       },
       "CPAN::Common::Index::Mux::Ordered" : {
          "file" : "lib/CPAN/Common/Index/Mux/Ordered.pm",
-         "version" : "0.003"
+         "version" : "0.004"
       }
    },
    "release_status" : "stable",
@@ -109,7 +110,7 @@
          "web" : "https://github.com/dagolden/cpan-common-index"
       }
    },
-   "version" : "0.003",
+   "version" : "0.004",
    "x_authority" : "cpan:DAGOLDEN",
    "x_contributors" : [
       "Tatsuhiko Miyagawa <miyagawa@bulknews.net>"

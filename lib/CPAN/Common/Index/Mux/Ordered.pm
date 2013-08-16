@@ -8,6 +8,8 @@ package CPAN::Common::Index::Mux::Ordered;
 
 use parent 'CPAN::Common::Index';
 
+use Class::Tiny qw/resolvers/;
+
 use Module::Load ();
 
 =attr resolvers
@@ -16,8 +18,22 @@ use Module::Load ();
 
 =cut
 
-sub attributes {
-    return { resolvers => sub { [] }, };
+sub BUILD {
+    my $self = shift;
+
+    my $resolvers = $self->resolvers;
+    $resolvers = [] unless defined $resolvers;
+    if ( ref $resolvers ne 'ARRAY' ) {
+        Carp::croak("The 'resolvers' argument must be an array reference");
+    }
+    for my $r ( @$resolvers ) {
+        if ( !eval { $r->isa("CPAN::Common::Index") } ) {
+            Carp::croak("Resolver '$r' is not a CPAN::Common::Index object");
+        }
+    }
+    $self->resolvers($resolvers);
+
+    return;
 }
 
 =method assemble
@@ -54,14 +70,6 @@ sub assemble {
 sub validate_attributes {
     my ($self) = @_;
     my $resolvers = $self->resolvers;
-    if ( ref $resolvers ne 'ARRAY' ) {
-        Carp::croak("The 'resolvers' argument must be an array reference");
-    }
-    for my $r ( @{ $self->resolvers } ) {
-        if ( !eval { $r->isa("CPAN::Common::Index") } ) {
-            Carp::croak("Resolver '$r' is not a CPAN::Common::Index object");
-        }
-    }
     return 1;
 }
 
@@ -121,7 +129,7 @@ sub search_authors {
     return wantarray ? @found : $found[0];
 }
 
-__PACKAGE__->_build_accessors;
+1;
 
 =for Pod::Coverage attributes validate_attributes search_packages search_authors
 

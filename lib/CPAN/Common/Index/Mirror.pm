@@ -8,6 +8,8 @@ package CPAN::Common::Index::Mirror;
 
 use parent 'CPAN::Common::Index';
 
+use Class::Tiny qw/cache mirror/;
+
 use Carp;
 use CPAN::DistnameInfo;
 use File::Basename ();
@@ -29,28 +31,26 @@ temporary directory if not specified.
 
 =cut
 
-sub attributes {
-    return {
-        cache  => sub { File::Temp->newdir },
-        mirror => "http://www.cpan.org/",
-    };
-}
-
-sub validate_attributes {
-    my ($self) = @_;
+sub BUILD {
+    my $self = shift;
 
     # cache directory needs to exist
     my $cache = $self->cache;
+    $cache = File::Temp->newdir
+      unless defined $cache;
     if ( !-d $cache ) {
         Carp::croak("Cache directory '$cache' does not exist");
     }
+    $self->cache($cache);
 
-    # ensure URL ends in '/'
+    # ensure mirror URL ends in '/'
     my $mirror = $self->mirror;
+    $mirror = "http://www.cpan.org/"
+      unless defined $mirror;
     $mirror =~ s{/?$}{/};
     $self->mirror($mirror);
 
-    return 1;
+    return;
 }
 
 my %INDICES = (
@@ -138,7 +138,7 @@ sub search_packages {
     my $index_path = $self->cached_package;
     die "Can't read $index_path" unless -r $index_path;
     tie *PD, 'Tie::Handle::SkipHeader', "<", $index_path
-        or die "Can't tie $index_path: $!";
+      or die "Can't tie $index_path: $!";
 
     # Convert scalars or regexps to subs
     my $rules;
@@ -256,7 +256,7 @@ sub _match_mailrc_line {
     };
 }
 
-__PACKAGE__->_build_accessors;
+1;
 
 =for Pod::Coverage attributes validate_attributes search_packages search_authors
 cached_package cached_mailrc

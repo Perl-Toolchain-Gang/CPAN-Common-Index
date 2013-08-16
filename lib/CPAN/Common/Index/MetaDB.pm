@@ -8,6 +8,8 @@ package CPAN::Common::Index::MetaDB;
 
 use parent 'CPAN::Common::Index';
 
+use Class::Tiny qw/uri/;
+
 use Carp;
 use CPAN::Meta::YAML;
 use HTTP::Tiny;
@@ -19,19 +21,15 @@ default is L<http://cpanmetadb.plackperl.org/v1.0/>.
 
 =cut
 
-sub attributes {
-    return { uri => "http://cpanmetadb.plackperl.org/v1.0/" };
-}
-
-sub validate_attributes {
-    my ($self) = @_;
-
-    # ensure URI ends in '/'
+sub BUILD {
+    my $self = shift;
     my $uri = $self->uri;
+    $uri = "http://cpanmetadb.plackperl.org/v1.0/"
+      unless defined $uri;
+    # ensure URI ends in '/'
     $uri =~ s{/?$}{/};
     $self->uri($uri);
-
-    return 1;
+    return;
 }
 
 sub search_packages {
@@ -67,7 +65,7 @@ sub index_age { return time };    # pretend always current
 
 sub search_authors { return };    # not supported
 
-__PACKAGE__->_build_accessors;
+1;
 
 =for Pod::Coverage attributes validate_attributes search_packages search_authors
 

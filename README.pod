@@ -8,7 +8,7 @@ CPAN::Common::Index - Common library for searching CPAN modules, authors and dis
 
 =head1 VERSION
 
-version 0.003
+version 0.004
 
 =head1 SYNOPSIS
 
@@ -44,13 +44,6 @@ different index backends, querying each in turn, and returning the first
 result.
 
 =head1 METHODS
-
-=head2 new
-
-    $index = $class->new( \%args );
-
-The constructor arguments must be given a hash reference.  The specific
-keys allowed are defined by each backend.
 
 =head2 search_packages (ABSTRACT)
 
