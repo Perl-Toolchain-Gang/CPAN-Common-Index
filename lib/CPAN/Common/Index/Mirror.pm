@@ -256,6 +256,8 @@ sub _match_mailrc_line {
     };
 }
 
+sub DESTROY { untie *PD }
+
 1;
 
 =for Pod::Coverage attributes validate_attributes search_packages search_authors
