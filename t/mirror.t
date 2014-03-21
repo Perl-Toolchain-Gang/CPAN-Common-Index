@@ -62,42 +62,42 @@ subtest 'refresh and unpack index files' => sub {
     my $index = new_mirror_index;
 
     for my $file ( $mailrc, "$mailrc.gz", $packages, "$packages.gz" ) {
-        ok( ! -e catfile($cache, $file), "$file not there" );
+        ok( !-e catfile( $cache, $file ), "$file not there" );
     }
     ok( $index->refresh_index, "refreshed index" );
     for my $file ( $mailrc, "$mailrc.gz", $packages, "$packages.gz" ) {
-        ok( -e catfile($cache, $file), "$file is there" );
+        ok( -e catfile( $cache, $file ), "$file is there" );
     }
 };
 
 # XXX test that files in cache aren't overwritten?
 
 subtest 'check index age' => sub {
-    my $index = new_mirror_index;
+    my $index   = new_mirror_index;
     my $package = $index->cached_package;
     ok( -f $package, "got the package file" );
-    my $expected_age = (stat($package))[9];
+    my $expected_age = ( stat($package) )[9];
     is( $index->index_age, $expected_age, "index_age() is correct" );
 };
 
 subtest 'find package' => sub {
     my $index = new_mirror_index;
-    test_find_package( $index );
+    test_find_package($index);
 };
 
 subtest 'search package' => sub {
     my $index = new_mirror_index;
-    test_search_package( $index );
+    test_search_package($index);
 };
 
 subtest 'find author' => sub {
     my $index = new_mirror_index;
-    test_find_author( $index );
+    test_find_author($index);
 };
 
 subtest 'search author' => sub {
     my $index = new_mirror_index;
-    test_search_author( $index );
+    test_search_author($index);
 };
 
 done_testing;

@@ -20,13 +20,11 @@ require_ok("CPAN::Common::Index::Mirror");
 require_ok("CPAN::Common::Index::LocalPackage");
 require_ok("CPAN::Common::Index::Mux::Ordered");
 
-my $mirror_index = CPAN::Common::Index::Mirror->new(
-    { cache => $cache, mirror => $test_mirror }
-);
+my $mirror_index =
+  CPAN::Common::Index::Mirror->new( { cache => $cache, mirror => $test_mirror } );
 
 my $local_index = CPAN::Common::Index::LocalPackage->new(
-    { cache => $cache, source => $local_pkg }
-);
+    { cache => $cache, source => $local_pkg } );
 
 subtest "constructor tests" => sub {
     # no arguments, all defaults
@@ -37,7 +35,7 @@ subtest "constructor tests" => sub {
 
     # single resolver specified
     new_ok(
-        'CPAN::Common::Index::Mux::Ordered' => [ { resolvers => [ $mirror_index ] } ],
+        'CPAN::Common::Index::Mux::Ordered' => [ { resolvers => [$mirror_index] } ],
         "new with single mirror resolver"
     );
 
@@ -59,10 +57,11 @@ subtest "constructor tests" => sub {
 
 subtest "find package" => sub {
     my $index = new_ok(
-        'CPAN::Common::Index::Mux::Ordered' => [ { resolvers => [ $local_index, $mirror_index ] } ],
+        'CPAN::Common::Index::Mux::Ordered' =>
+          [ { resolvers => [ $local_index, $mirror_index ] } ],
         "new with single mirror resolver"
     );
-    test_find_package( $index );
+    test_find_package($index);
 
     # test finding darkpan from local
     {
@@ -100,10 +99,10 @@ subtest "find package" => sub {
 
 subtest "search package" => sub {
     my $index = new_ok(
-        'CPAN::Common::Index::Mux::Ordered' => [ { resolvers => [ $mirror_index ] } ],
+        'CPAN::Common::Index::Mux::Ordered' => [ { resolvers => [$mirror_index] } ],
         "new with single mirror resolver"
     );
-    test_search_package( $index );
+    test_search_package($index);
 };
 
 done_testing;

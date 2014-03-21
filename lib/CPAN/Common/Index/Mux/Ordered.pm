@@ -26,7 +26,7 @@ sub BUILD {
     if ( ref $resolvers ne 'ARRAY' ) {
         Carp::croak("The 'resolvers' argument must be an array reference");
     }
-    for my $r ( @$resolvers ) {
+    for my $r (@$resolvers) {
         if ( !eval { $r->isa("CPAN::Common::Index") } ) {
             Carp::croak("Resolver '$r' is not a CPAN::Common::Index object");
         }

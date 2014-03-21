@@ -30,7 +30,7 @@ sub test_find_package {
         {
             label  => 'query on package dist::zilla',
             query  => { package => "dist::zilla" },
-            result => undef, # should not match case insensitively
+            result => undef,                         # should not match case insensitively
         },
         {
             label  => 'query on package without version ',
@@ -152,8 +152,8 @@ sub test_search_author {
             ],
         },
         {
-            label    => 'query email on qr/dagolden/',
-            query    => { email => qr/dagolden/ },
+            label  => 'query email on qr/dagolden/',
+            query  => { email => qr/dagolden/ },
             result => [
                 {
                     id       => 'DAGOLDEN',
@@ -163,8 +163,8 @@ sub test_search_author {
             ],
         },
         {
-            label    => 'query fullname on qr/Golden$/',
-            query    => { fullname => qr/Golden$/ },
+            label  => 'query fullname on qr/Golden$/',
+            query  => { fullname => qr/Golden$/ },
             result => [
                 {
                     id       => 'DAGOLDEN',

@@ -23,7 +23,7 @@ default is L<http://cpanmetadb.plackperl.org/v1.0/>.
 
 sub BUILD {
     my $self = shift;
-    my $uri = $self->uri;
+    my $uri  = $self->uri;
     $uri = "http://cpanmetadb.plackperl.org/v1.0/"
       unless defined $uri;
     # ensure URI ends in '/'
