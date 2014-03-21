@@ -67,7 +67,7 @@ sub search_authors { return };    # not supported
 
 1;
 
-=for Pod::Coverage attributes validate_attributes search_packages search_authors
+=for Pod::Coverage attributes validate_attributes search_packages search_authors BUILD
 
 =head1 SYNOPSIS
 

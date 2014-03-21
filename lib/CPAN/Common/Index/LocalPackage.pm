@@ -73,7 +73,7 @@ sub search_authors { return }; # this package handles packages only
 1;
 
 =for Pod::Coverage attributes validate_attributes search_packages search_authors
-cached_package
+cached_package BUILD
 
 =head1 SYNOPSIS
 

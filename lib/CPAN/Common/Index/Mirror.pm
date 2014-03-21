@@ -261,7 +261,7 @@ sub DESTROY { untie *PD }
 1;
 
 =for Pod::Coverage attributes validate_attributes search_packages search_authors
-cached_package cached_mailrc
+cached_package cached_mailrc BUILD
 
 =head1 SYNOPSIS
 
