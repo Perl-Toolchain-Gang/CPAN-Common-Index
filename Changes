@@ -6,6 +6,10 @@ Revision history for CPAN-Common-Index
 
     - Fixed bug removing tempfiles on Windows (Kenichi Ishigaki)
 
+    [CHANGED]
+
+    - Modernized repo meta and support files
+
 0.003     2013-08-14 16:18:00 America/New_York
 
     [FIXED]
