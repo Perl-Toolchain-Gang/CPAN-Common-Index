@@ -31,13 +31,6 @@ subtest "constructor tests" => sub {
         "new with cache"
     );
 
-    # unknown argument
-    eval { CPAN::Common::Index::MetaDB->new( { foo => 'bar' } ) };
-    like(
-        $@ => qr/Invalid .*? foo/,
-        "Unknown argument dies with error"
-    );
-
 };
 
 subtest 'find package' => sub {

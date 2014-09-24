@@ -2,6 +2,10 @@ Revision history for CPAN-Common-Index
 
 {{$NEXT}}
 
+    [FIXED]
+
+    - Fixed tests for Class::Tiny 1.000 changes
+
 0.004     2014-03-21 06:56:46-04:00 America/New_York
 
     [FIXED]

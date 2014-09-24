@@ -50,12 +50,6 @@ subtest "constructor tests" => sub {
     # both specified
     new_mirror_index;
 
-    # unknown argument
-    eval { CPAN::Common::Index::Mirror->new( { mirror => $test_mirror, foo => 'bar' } ) };
-    like(
-        $@ => qr/Invalid .*? foo/,
-        "Unknown argument dies with error"
-    );
 };
 
 subtest 'refresh and unpack index files' => sub {

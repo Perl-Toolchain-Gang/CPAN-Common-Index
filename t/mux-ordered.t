@@ -46,13 +46,6 @@ subtest "constructor tests" => sub {
         "Bad resolver dies with error"
     );
 
-    # unknown argument
-    eval { CPAN::Common::Index::Mux::Ordered->new( { foo => 'bar' } ) };
-    like(
-        $@ => qr/Invalid .* foo/,
-        "Unknown argument dies with error"
-    );
-
 };
 
 subtest "find package" => sub {
