@@ -47,7 +47,7 @@ The result must be formed as follows:
       uri     => "cpan:///distfile/ETHER/Moose-2.0802.tar.gz"
     }
 
-The C<uri> field should a valid URI.  It may be a L<URI::cpan> or any other
+The C<uri> field should be a valid URI.  It may be a L<URI::cpan> or any other
 URI.  (It is up to a client to do something useful with any given URI scheme.)
 
 =method search_authors (ABSTRACT)
