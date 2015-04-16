@@ -4,7 +4,8 @@ use warnings;
 
 package CPAN::Common::Index;
 # ABSTRACT: Common library for searching CPAN modules, authors and distributions
-# VERSION
+
+our $VERSION = '0.006';
 
 use Carp ();
 

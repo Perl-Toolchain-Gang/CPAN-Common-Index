@@ -4,7 +4,8 @@ use warnings;
 
 package CPAN::Common::Index::Mux::Ordered;
 # ABSTRACT: Consult indices in order and return the first result
-# VERSION
+
+our $VERSION = '0.006';
 
 use parent 'CPAN::Common::Index';
 

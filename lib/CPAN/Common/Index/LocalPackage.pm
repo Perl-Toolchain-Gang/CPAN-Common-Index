@@ -4,7 +4,8 @@ use warnings;
 
 package CPAN::Common::Index::LocalPackage;
 # ABSTRACT: Search index via custom local CPAN package flatfile
-# VERSION
+
+our $VERSION = '0.006';
 
 use parent 'CPAN::Common::Index::Mirror';
 
