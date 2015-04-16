@@ -137,7 +137,9 @@ sub search_packages {
 
     my $index_path = $self->cached_package;
     die "Can't read $index_path" unless -r $index_path;
-    tie *PD, 'Tie::Handle::SkipHeader', "<", $index_path
+
+    my $fh = IO::Handle->new;
+    tie *$fh, 'Tie::Handle::SkipHeader', "<", $index_path
       or die "Can't tie $index_path: $!";
 
     # Convert scalars or regexps to subs
@@ -149,16 +151,16 @@ sub search_packages {
     my @found;
     if ( $args->{package} and ref $args->{package} eq '' ) {
         # binary search 02packages on package
-        my $pos = look * PD, $args->{package}, { xfrm => \&_xform_package, fold => 1 };
+        my $pos = look $fh, $args->{package}, { xfrm => \&_xform_package, fold => 1 };
         return if $pos == -1;
         # XXX eventually, loop lines until package doesn't match so we can
         # search an index with unique package+version, not just package
-        my $line = <PD>;
+        my $line = <$fh>;
         push @found, _match_package_line( $line, $rules );
     }
     else {
         # iterate all lines looking for match
-        LINE: while ( my $line = <PD> ) {
+        LINE: while ( my $line = <$fh> ) {
             push @found, _match_package_line( $line, $rules );
         }
     }
@@ -255,8 +257,6 @@ sub _match_mailrc_line {
         email    => $email,
     };
 }
-
-sub DESTROY { untie *PD }
 
 1;
 
