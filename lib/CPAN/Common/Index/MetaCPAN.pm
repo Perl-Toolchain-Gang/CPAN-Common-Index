@@ -14,6 +14,7 @@ use Carp;
 use CPAN::Meta::Requirements;
 use HTTP::Tiny;
 use JSON::PP ();
+use Time::Local ();
 use version;
 
 =attr uri
@@ -85,11 +86,11 @@ sub search_packages {
 
     my $module_meta = eval { JSON::PP::decode_json($res->{content}) };
 
-    my $match = $self->_find_best_match($module_meta);
-    if ($match) {
-        $release = $match->{release};
-        $author = $match->{author};
-        my $module_matched = (grep { $_->{name} eq $args->{package} } @{$match->{module}})[0];
+    my $file = $self->_find_best_match($module_meta);
+    if ($file) {
+        $release = $file->{release};
+        $author = $file->{author};
+        my $module_matched = (grep { $_->{name} eq $args->{package} } @{$file->{module}})[0];
         $module_version = $module_matched->{version};
     }
 
@@ -101,7 +102,7 @@ sub search_packages {
             { term => { 'release.name' => $release } },
             { term => { 'release.author' => $author } },
         ]},
-        fields => [ 'download_url', 'stat', 'status' ],
+        fields => [ 'download_url' ],
     });
 
     $res = HTTP::Tiny->new->get($dist_uri);
@@ -122,9 +123,9 @@ sub search_packages {
             uri => "cpan:///distfile/$distfile",
         };
 
-        if ($dist_meta->{status} eq 'backpan') {
+        if ($file->{status} eq 'backpan') {
             $res->{download_uri} = $self->_download_uri("http://backpan.perl.org", $distfile);
-        } elsif ($dist_meta->{stat}{mtime} > time() - 24 * 60 * 60) {
+        } elsif ($self->_parse_date($file->{date}) > time() - 24 * 60 * 60) {
             $res->{download_uri} = $self->_download_uri("http://cpan.metacpan.org", $distfile);
         }
 
@@ -132,6 +133,12 @@ sub search_packages {
     }
 
     return;
+}
+
+sub _parse_date {
+    my($self, $date) = @_;
+    my @date = $date =~ /^(\d{4})-(\d\d)-(\d\d)T(\d\d):(\d\d):(\d\d)\.\d+Z$/;
+    Time::Local::timegm($date[5], $date[4], $date[3], $date[2], $date[1] - 1, $date[0] - 1900);
 }
 
 sub _download_uri {
@@ -228,7 +235,7 @@ sub by_status {
 }
 
 sub by_date {
-    # Always prefer new uploads
+    # prefer new uploads
     $b->{fields}{date} cmp $a->{fields}{date};
 }
 
