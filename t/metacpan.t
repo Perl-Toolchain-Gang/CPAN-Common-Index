@@ -97,6 +97,30 @@ subtest 'find a package in BackPAN' => sub {
     );
 };
 
+subtest 'find a version staying package' => sub {
+    my $index = new_ok("CPAN::Common::Index::MetaCPAN");
+
+    my $got = $index->search_packages( { package => 'CPAN::Test::Dummy::Perl5::VersionBump::Stay' } );
+    ok( $got, "found package" );
+    is(
+        $got->{uri},
+        "cpan:///distfile/MIYAGAWA/CPAN-Test-Dummy-Perl5-VersionBump-0.02.tar.gz",
+        "uri is OK",
+    );
+};
+
+subtest 'find a version decreasing package' => sub {
+    my $index = new_ok("CPAN::Common::Index::MetaCPAN");
+
+    my $got = $index->search_packages( { package => 'CPAN::Test::Dummy::Perl5::VersionBump::Decrease' } );
+    ok( $got, "found package" );
+    is(
+        $got->{uri},
+        "cpan:///distfile/MIYAGAWA/CPAN-Test-Dummy-Perl5-VersionBump-0.01.tar.gz",
+        "uri is OK",
+    );
+};
+
 done_testing;
 # COPYRIGHT
 # vim: ts=4 sts=4 sw=4 et:
