@@ -137,7 +137,7 @@ sub search_packages {
 
 sub _parse_date {
     my($self, $date) = @_;
-    my @date = $date =~ /^(\d{4})-(\d\d)-(\d\d)T(\d\d):(\d\d):(\d\d)\.\d+Z$/;
+    my @date = $date =~ /^(\d{4})-(\d\d)-(\d\d)T(\d\d):(\d\d):(\d\d)(?:\.\d+)?Z$/;
     Time::Local::timegm($date[5], $date[4], $date[3], $date[2], $date[1] - 1, $date[0] - 1900);
 }
 
