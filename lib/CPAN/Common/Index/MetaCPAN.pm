@@ -116,7 +116,7 @@ sub search_packages {
     }
 
     if ($dist_meta && $dist_meta->{download_url}) {
-        (my $distfile = $dist_meta->{download_url}) =~ s!.+/authors/id/!!;
+        (my $distfile = $dist_meta->{download_url}) =~ s!.+/authors/id/\w/\w\w/!!;
 
         my $res = {
             package => $args->{package},
@@ -125,15 +125,20 @@ sub search_packages {
         };
 
         if ($dist_meta->{status} eq 'backpan') {
-            $res->{download_uri} = "http://backpan.perl.org/authors/id/$distfile";
+            $res->{download_uri} = $self->_download_uri("http://backpan.perl.org", $distfile);
         } elsif ($dist_meta->{stat}{mtime} > time() - 24 * 60 * 60) {
-            $res->{download_uri} = "http://cpan.metacpan.org/authors/id/$distfile";
+            $res->{download_uri} = $self->_download_uri("http://cpan.metacpan.org", $distfile);
         }
 
         return $res;
     }
 
     return;
+}
+
+sub _download_uri {
+    my($self, $base, $distfile) = @_;
+    join "/", $base, "authors/id", substr($distfile, 0, 1), substr($distfile, 0, 2), $distfile;
 }
 
 sub _encode_json {
