@@ -49,8 +49,6 @@ sub search_packages {
         $range = "== $args->{version}";
     } elsif ( $args->{version_range} ) {
         $range = $args->{version_range};
-    } else {
-        $range = "0";
     }
 
     my @filter = $self->_maturity_filter($args->{package}, $range);
@@ -151,6 +149,8 @@ sub _encode_json {
 sub _version_to_query {
     my($self, $module, $version) = @_;
 
+    return () unless $version;
+
     my $requirements = CPAN::Meta::Requirements->new;
     $requirements->add_string_requirement($module, $version || '0');
 
@@ -207,7 +207,9 @@ sub _maturity_filter {
         push @filters, { not => { term => { status => 'backpan' } } };
     }
 
-    unless ($self->include_dev or $version =~ /==/) {
+    my $explicit_version = $version && $version =~ /==/;
+
+    unless ($self->include_dev or $explicit_version) {
         push @filters, { term => { maturity => 'released' } };
     }
 
