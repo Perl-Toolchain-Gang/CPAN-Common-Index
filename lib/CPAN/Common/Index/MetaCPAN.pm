@@ -217,25 +217,25 @@ sub _maturity_filter {
 }
 
 sub by_version {
-    my %s = (latest => 3,  cpan => 2,  backpan => 1);
-    $b->{_score} <=> $a->{_score} ||                             # version: higher version that satisfies the query
-    $s{ $b->{fields}{status} } <=> $s{ $a->{fields}{status} };   # prefer non-BackPAN dist
+    # version: higher version that satisfies the query
+    $b->{fields}{module}[0]{"version_numified"} <=> $a->{fields}{module}[0]{"version_numified"};
 }
 
-sub by_first_come {
-    $a->{fields}{date} cmp $b->{fields}{date};                   # first one wins, if all are in BackPAN/CPAN
+sub by_status {
+    # prefer non-backpan dist
+    my %s = (latest => 3,  cpan => 2,  backpan => 1);
+    $s{ $b->{fields}{status} } <=> $s{ $a->{fields}{status} };
 }
 
 sub by_date {
-    $b->{fields}{date} cmp $a->{fields}{date};                   # prefer new uploads, when searching for dev
+    # Always prefer new uploads
+    $b->{fields}{date} cmp $a->{fields}{date};
 }
 
 sub _find_best_match {
     my($self, $match, $version) = @_;
     return unless $match && @{$match->{hits}{hits} || []};
-    my @hits = $self->include_dev
-        ? sort { by_version || by_date } @{$match->{hits}{hits}}
-        : sort { by_version || by_first_come } @{$match->{hits}{hits}};
+    my @hits = sort { by_version || by_status || by_date } @{$match->{hits}{hits}};
     $hits[0]->{fields};
 }
 
