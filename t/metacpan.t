@@ -5,10 +5,6 @@ use Test::More 0.96;
 use Test::FailWarnings;
 use Test::Deep '!blessed';
 use Test::Fatal;
-
-use Cwd qw/getcwd/;
-use File::Temp;
-use File::Spec::Functions qw/catfile/;
 use HTTP::Tiny;
 
 my $test_url = "http://api.metacpan.org";
