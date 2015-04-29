@@ -50,6 +50,15 @@ sub test_find_package {
                 uri     => 'cpan:///distfile/FLORA/perl-5.17.4.tar.bz2',
             },
         },
+        {
+            label  => 'query on package duplicated in another case',
+            query  => { package => 'if', },
+            result => {
+                package => 'if',
+                version => '0.0601',
+                uri     => 'cpan:///distfile/ILYAZ/modules/if-0.0601.tar.gz'
+            },
+        },
     );
 
     for my $c (@cases) {

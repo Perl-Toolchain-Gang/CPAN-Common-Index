@@ -154,10 +154,11 @@ sub search_packages {
         # binary search 02packages on package
         my $pos = look $fh, $args->{package}, { xfrm => \&_xform_package, fold => 1 };
         return if $pos == -1;
-        # XXX eventually, loop lines until package doesn't match so we can
-        # search an index with unique package+version, not just package
-        my $line = <$fh>;
-        push @found, _match_package_line( $line, $rules );
+        # loop over any case-insensitive matching lines
+        LINE: while ( my $line = <$fh> ) {
+            last unless $line =~ /\A\Q$args->{package}\E\s+/i;
+            push @found, _match_package_line( $line, $rules );
+        }
     }
     else {
         # iterate all lines looking for match
