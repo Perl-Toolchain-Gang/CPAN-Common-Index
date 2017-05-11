@@ -14,7 +14,7 @@ use lib 't/lib';
 use CommonTests;
 
 my $cwd          = getcwd;
-my $cache        = File::Temp::tempdir(CLEANUP => 1);
+my $cache        = File::Temp::tempdir(CLEANUP => 1, TMPDIR => 1);
 my $localgz      = File::Spec->catfile(qw/t CUSTOM mypackages.gz/);
 my $local        = File::Spec->catfile(qw/t CUSTOM uncompressed/);
 my $packages     = "mypackages";
