@@ -5,7 +5,7 @@ use warnings;
 package CPAN::Common::Index::Mirror;
 # ABSTRACT: Search index via CPAN mirror flatfiles
 
-our $VERSION = '0.007';
+our $VERSION = '0.008';
 
 use parent 'CPAN::Common::Index';
 
