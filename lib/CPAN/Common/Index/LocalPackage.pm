@@ -13,7 +13,9 @@ use Class::Tiny qw/source/;
 
 use Carp;
 use IO::Uncompress::Gunzip ();
-use Path::Tiny;
+use File::Basename ();
+use File::Copy ();
+use File::Spec;
 
 =attr source (REQUIRED)
 
@@ -44,7 +46,9 @@ sub BUILD {
 
 sub cached_package {
     my ($self) = @_;
-    my $package = path( $self->cache, path( $self->source )->basename );
+    my $package = File::Spec->catfile(
+        $self->cache, File::Basename::basename($self->source)
+    );
     $package =~ s/\.gz$//;
     $self->refresh_index unless -r $package;
     return $package;
@@ -52,19 +56,19 @@ sub cached_package {
 
 sub refresh_index {
     my ($self) = @_;
-    my $source = path( $self->source );
+    my $source = $self->source;
     if ( $source =~ /\.gz$/ ) {
-        ( my $uncompressed = $source->basename ) =~ s/\.gz$//;
-        $uncompressed = path( $self->cache, $uncompressed );
-        if ( !-f $uncompressed or $source->stat->mtime > $uncompressed->stat->mtime ) {
+        ( my $uncompressed = File::Basename::basename($source) ) =~ s/\.gz$//;
+        $uncompressed = File::Spec->catfile( $self->cache, $uncompressed );
+        if ( !-f $uncompressed or (stat $source)[9] > (stat $uncompressed)[9] ) {
             IO::Uncompress::Gunzip::gunzip( map { "$_" } $source, $uncompressed )
               or Carp::croak "gunzip failed: $IO::Uncompress::Gunzip::GunzipError\n";
         }
     }
     else {
-        my $dest = path( $self->cache, $source->basename );
-        $source->copy($dest)
-          if !-e $dest || $source->stat->mtime > $dest->stat->mtime;
+        my $dest = File::Spec->catfile( $self->cache, File::Basename::basename($source) );
+        File::Copy::copy($source, $dest)
+          if !-e $dest || (stat $source)[9] > (stat $dest)[9];
     }
     return 1;
 }
