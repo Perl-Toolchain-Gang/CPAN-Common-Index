@@ -16,6 +16,7 @@ use IO::Uncompress::Gunzip ();
 use File::Basename ();
 use File::Copy ();
 use File::Spec;
+use File::stat ();
 
 =attr source (REQUIRED)
 
@@ -61,7 +62,8 @@ sub refresh_index {
     if ( $source =~ /\.gz$/ ) {
         ( my $uncompressed = $basename ) =~ s/\.gz$//;
         $uncompressed = File::Spec->catfile( $self->cache, $uncompressed );
-        if ( !-f $uncompressed or (stat $source)[9] > (stat $uncompressed)[9] ) {
+        if ( !-f $uncompressed
+              or File::stat::stat($source)->mtime > File::stat::stat($uncompressed)->mtime ) {
             IO::Uncompress::Gunzip::gunzip( map { "$_" } $source, $uncompressed )
               or Carp::croak "gunzip failed: $IO::Uncompress::Gunzip::GunzipError\n";
         }
@@ -69,7 +71,7 @@ sub refresh_index {
     else {
         my $dest = File::Spec->catfile( $self->cache, $basename );
         File::Copy::copy($source, $dest)
-          if !-e $dest || (stat $source)[9] > (stat $dest)[9];
+          if !-e $dest || File::stat::stat($source)->mtime > File::stat::stat($dest)->mtime;
     }
     return 1;
 }
