@@ -2,6 +2,10 @@ Revision history for CPAN-Common-Index
 
 {{$NEXT}}
 
+    [CHANGED]
+
+    - Removed dependency on Path::Tiny; uses core modules directly.
+
 0.006     2015-04-29 16:53:04-04:00 America/New_York
 
     [FIXED]
