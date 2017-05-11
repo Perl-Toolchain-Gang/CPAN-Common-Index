@@ -57,8 +57,9 @@ sub cached_package {
 sub refresh_index {
     my ($self) = @_;
     my $source = $self->source;
+    my $basename = File::Basename::basename($source);
     if ( $source =~ /\.gz$/ ) {
-        ( my $uncompressed = File::Basename::basename($source) ) =~ s/\.gz$//;
+        ( my $uncompressed = $basename ) =~ s/\.gz$//;
         $uncompressed = File::Spec->catfile( $self->cache, $uncompressed );
         if ( !-f $uncompressed or (stat $source)[9] > (stat $uncompressed)[9] ) {
             IO::Uncompress::Gunzip::gunzip( map { "$_" } $source, $uncompressed )
@@ -66,7 +67,7 @@ sub refresh_index {
         }
     }
     else {
-        my $dest = File::Spec->catfile( $self->cache, File::Basename::basename($source) );
+        my $dest = File::Spec->catfile( $self->cache, $basename );
         File::Copy::copy($source, $dest)
           if !-e $dest || (stat $source)[9] > (stat $dest)[9];
     }
