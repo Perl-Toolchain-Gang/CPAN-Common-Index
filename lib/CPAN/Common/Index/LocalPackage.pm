@@ -12,7 +12,7 @@ use parent 'CPAN::Common::Index::Mirror';
 use Class::Tiny qw/source/;
 
 use Carp;
-use IO::Uncompress::Gunzip ();
+use CPAN::Common::Index::Util;
 use File::Basename ();
 use File::Copy ();
 use File::Spec;
@@ -64,8 +64,8 @@ sub refresh_index {
         $uncompressed = File::Spec->catfile( $self->cache, $uncompressed );
         if ( !-f $uncompressed
               or File::stat::stat($source)->mtime > File::stat::stat($uncompressed)->mtime ) {
-            IO::Uncompress::Gunzip::gunzip( map { "$_" } $source, $uncompressed )
-              or Carp::croak "gunzip failed: $IO::Uncompress::Gunzip::GunzipError\n";
+            eval { CPAN::Common::Index::Util::gunzip( $source, $uncompressed ) }
+              or Carp::croak $@;
         }
     }
     else {
