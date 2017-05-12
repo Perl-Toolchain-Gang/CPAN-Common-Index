@@ -16,7 +16,7 @@ use CPAN::DistnameInfo;
 use File::Basename ();
 use File::Fetch;
 use File::Temp 0.19; # newdir
-use IO::Uncompress::Gunzip ();
+use CPAN::Common::Index::Util;
 use Search::Dict 1.07;
 use Tie::Handle::SkipHeader;
 use URI;
@@ -118,8 +118,8 @@ sub refresh_index {
         my $where = $ff->fetch( to => $self->cache )
           or Carp::croak( $ff->error );
         ( my $uncompressed = $where ) =~ s/\.gz$//;
-        IO::Uncompress::Gunzip::gunzip( $where, $uncompressed )
-          or Carp::croak "gunzip failed: $IO::Uncompress::Gunzip::GunzipError\n";
+        eval { CPAN::Common::Index::Util::gunzip( $where, $uncompressed ) }
+          or Carp::croak $@;
     }
     return 1;
 }
