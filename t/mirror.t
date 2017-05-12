@@ -13,6 +13,8 @@ use File::Spec::Functions qw/catfile/;
 use lib 't/lib';
 use CommonTests;
 
+my $HAS_IO_UNCOMPRESS_GUNZIP = eval { require IO::Uncompress::Gunzip };
+
 my $cwd         = getcwd;
 my $test_mirror = "file:///$cwd/t/CPAN";
 my $cache       = File::Temp->newdir;
@@ -55,11 +57,14 @@ subtest "constructor tests" => sub {
 subtest 'refresh and unpack index files' => sub {
     my $index = new_mirror_index;
 
-    for my $file ( $mailrc, "$mailrc.gz", $packages, "$packages.gz" ) {
+    my @file = ( $mailrc, $packages );
+    push @file, "$mailrc.gz", "$packages.gz" if $HAS_IO_UNCOMPRESS_GUNZIP;
+
+    for my $file (@file) {
         ok( !-e catfile( $cache, $file ), "$file not there" );
     }
     ok( $index->refresh_index, "refreshed index" );
-    for my $file ( $mailrc, "$mailrc.gz", $packages, "$packages.gz" ) {
+    for my $file (@file) {
         ok( -e catfile( $cache, $file ), "$file is there" );
     }
 };

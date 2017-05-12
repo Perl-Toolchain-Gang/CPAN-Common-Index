@@ -13,6 +13,8 @@ use File::Temp ();
 use lib 't/lib';
 use CommonTests;
 
+my $HAS_IO_UNCOMPRESS_GUNZIP = eval { require IO::Uncompress::Gunzip };
+
 my $cwd          = getcwd;
 my $cache        = File::Temp::tempdir(CLEANUP => 1, TMPDIR => 1);
 my $localgz      = File::Spec->catfile(qw/t CUSTOM mypackages.gz/);
@@ -67,6 +69,8 @@ subtest "constructor tests" => sub {
 };
 
 subtest 'refresh and unpack index files' => sub {
+    plan skip_all => "IO::Uncompress::Gunzip is not available"
+      unless $HAS_IO_UNCOMPRESS_GUNZIP;
     my $index = new_local_index;
 
     ok( !-e File::Spec->catfile( $cache, $packages ), "$packages not in cache" );
@@ -89,7 +93,8 @@ subtest 'refresh and unpack uncompressed index files' => sub {
 # XXX test that files in cache aren't overwritten?
 
 subtest 'check index age' => sub {
-    my $index   = new_local_index;
+    my $index =
+      $HAS_IO_UNCOMPRESS_GUNZIP ? new_local_index : new_uncompressed_local_index;
     my $package = $index->cached_package;
     ok( -f $package, "got the package file" );
     my $expected_age = ( stat($package) )[9];
@@ -97,12 +102,14 @@ subtest 'check index age' => sub {
 };
 
 subtest 'find package' => sub {
-    my $index = new_local_index;
+    my $index =
+      $HAS_IO_UNCOMPRESS_GUNZIP ? new_local_index : new_uncompressed_local_index;
     test_find_package($index);
 };
 
 subtest 'search package' => sub {
-    my $index = new_local_index;
+    my $index =
+      $HAS_IO_UNCOMPRESS_GUNZIP ? new_local_index : new_uncompressed_local_index;
     test_search_package($index);
 };
 

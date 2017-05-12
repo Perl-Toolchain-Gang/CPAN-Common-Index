@@ -12,11 +12,12 @@ use parent 'CPAN::Common::Index::Mirror';
 use Class::Tiny qw/source/;
 
 use Carp;
-use IO::Uncompress::Gunzip ();
 use File::Basename ();
 use File::Copy ();
 use File::Spec;
 use File::stat ();
+
+my $HAS_IO_UNCOMPRESS_GUNZIP = eval { require IO::Uncompress::Gunzip };
 
 =attr source (REQUIRED)
 
@@ -60,10 +61,13 @@ sub refresh_index {
     my $source = $self->source;
     my $basename = File::Basename::basename($source);
     if ( $source =~ /\.gz$/ ) {
+        Carp::croak "can't load gz source files without IO::Uncompress::Gunzip\n"
+          unless $HAS_IO_UNCOMPRESS_GUNZIP;
         ( my $uncompressed = $basename ) =~ s/\.gz$//;
         $uncompressed = File::Spec->catfile( $self->cache, $uncompressed );
         if ( !-f $uncompressed
               or File::stat::stat($source)->mtime > File::stat::stat($uncompressed)->mtime ) {
+            no warnings 'once';
             IO::Uncompress::Gunzip::gunzip( map { "$_" } $source, $uncompressed )
               or Carp::croak "gunzip failed: $IO::Uncompress::Gunzip::GunzipError\n";
         }
