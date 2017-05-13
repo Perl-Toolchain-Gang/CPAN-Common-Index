@@ -13,15 +13,13 @@ use File::Spec::Functions qw/catfile/;
 use lib 't/lib';
 use CommonTests;
 
-my $HAS_IO_UNCOMPRESS_GUNZIP = eval { require IO::Uncompress::Gunzip };
-
 my $cwd         = getcwd;
 my $test_mirror = "file:///$cwd/t/CPAN";
-my $cache       = File::Temp->newdir;
 my $mailrc      = "01mailrc.txt";
 my $packages    = "02packages.details.txt";
 
 sub new_mirror_index {
+    my $cache = File::Temp->newdir;
     my $index = new_ok(
         'CPAN::Common::Index::Mirror' => [ { cache => $cache, mirror => $test_mirror } ],
         "new with cache and mirror"
@@ -39,7 +37,7 @@ subtest "constructor tests" => sub {
 
     # cache specified
     new_ok(
-        'CPAN::Common::Index::Mirror' => [ { cache => $cache } ],
+        'CPAN::Common::Index::Mirror' => [ { cache => File::Temp->newdir } ],
         "new with cache"
     );
 
@@ -58,46 +56,59 @@ subtest 'refresh and unpack index files' => sub {
     my $index = new_mirror_index;
 
     my @file = ( $mailrc, $packages );
-    push @file, "$mailrc.gz", "$packages.gz" if $HAS_IO_UNCOMPRESS_GUNZIP;
+    push @file, "$mailrc.gz", "$packages.gz"
+      if $CPAN::Common::Index::Mirror::HAS_IO_UNCOMPRESS_GUNZIP;
 
     for my $file (@file) {
-        ok( !-e catfile( $cache, $file ), "$file not there" );
+        ok( !-e catfile( $index->cache, $file ), "$file not there" );
     }
     ok( $index->refresh_index, "refreshed index" );
     for my $file (@file) {
-        ok( -e catfile( $cache, $file ), "$file is there" );
+        ok( -e catfile( $index->cache, $file ), "$file is there" );
     }
 };
 
 # XXX test that files in cache aren't overwritten?
 
-subtest 'check index age' => sub {
-    my $index   = new_mirror_index;
-    my $package = $index->cached_package;
-    ok( -f $package, "got the package file" );
-    my $expected_age = ( stat($package) )[9];
-    is( $index->index_age, $expected_age, "index_age() is correct" );
+my $common_tests = sub {
+    my $note =
+      ( $CPAN::Common::Index::Mirror::HAS_IO_UNCOMPRESS_GUNZIP ? "with" : "without" )
+      . " IO::Uncompress::Gunzip";
+
+    subtest "check index age $note" => sub {
+        my $index   = new_mirror_index;
+        my $package = $index->cached_package;
+        ok( -f $package, "got the package file" );
+        my $expected_age = ( stat($package) )[9];
+        is( $index->index_age, $expected_age, "index_age() is correct" );
+    };
+
+    subtest "find package $note" => sub {
+        my $index = new_mirror_index;
+        test_find_package($index);
+    };
+
+    subtest "search package $note" => sub {
+        my $index = new_mirror_index;
+        test_search_package($index);
+    };
+
+    subtest "find author $note" => sub {
+        my $index = new_mirror_index;
+        test_find_author($index);
+    };
+
+    subtest "search author $note" => sub {
+        my $index = new_mirror_index;
+        test_search_author($index);
+    };
 };
 
-subtest 'find package' => sub {
-    my $index = new_mirror_index;
-    test_find_package($index);
-};
-
-subtest 'search package' => sub {
-    my $index = new_mirror_index;
-    test_search_package($index);
-};
-
-subtest 'find author' => sub {
-    my $index = new_mirror_index;
-    test_find_author($index);
-};
-
-subtest 'search author' => sub {
-    my $index = new_mirror_index;
-    test_search_author($index);
-};
+$common_tests->();
+if ($CPAN::Common::Index::Mirror::HAS_IO_UNCOMPRESS_GUNZIP) {
+    local $CPAN::Common::Index::Mirror::HAS_IO_UNCOMPRESS_GUNZIP = 0;
+    $common_tests->();
+}
 
 done_testing;
 # COPYRIGHT
