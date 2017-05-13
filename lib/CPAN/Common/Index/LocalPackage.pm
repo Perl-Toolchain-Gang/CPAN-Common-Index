@@ -17,8 +17,6 @@ use File::Copy ();
 use File::Spec;
 use File::stat ();
 
-my $HAS_IO_UNCOMPRESS_GUNZIP = eval { require IO::Uncompress::Gunzip };
-
 =attr source (REQUIRED)
 
 Path to a local file in the form of 02packages.details.txt.  It may
@@ -62,7 +60,7 @@ sub refresh_index {
     my $basename = File::Basename::basename($source);
     if ( $source =~ /\.gz$/ ) {
         Carp::croak "can't load gz source files without IO::Uncompress::Gunzip\n"
-          unless $HAS_IO_UNCOMPRESS_GUNZIP;
+          unless $CPAN::Common::Index::Mirror::HAS_IO_UNCOMPRESS_GUNZIP;
         ( my $uncompressed = $basename ) =~ s/\.gz$//;
         $uncompressed = File::Spec->catfile( $self->cache, $uncompressed );
         if ( !-f $uncompressed

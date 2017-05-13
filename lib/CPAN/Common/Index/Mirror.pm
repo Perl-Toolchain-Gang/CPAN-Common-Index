@@ -20,7 +20,7 @@ use Search::Dict 1.07;
 use Tie::Handle::SkipHeader;
 use URI;
 
-my $HAS_IO_UNCOMPRES_GUNZIP = eval { require IO::Uncompress::Gunzip };
+our $HAS_IO_UNCOMPRESS_GUNZIP = eval { require IO::Uncompress::Gunzip };
 
 =attr mirror
 
@@ -116,11 +116,11 @@ sub refresh_index {
     for my $file ( values %INDICES ) {
         my $remote = URI->new_abs( $file, $self->mirror );
         $remote =~ s/\.gz$//
-          unless $HAS_IO_UNCOMPRES_GUNZIP;
+          unless $HAS_IO_UNCOMPRESS_GUNZIP;
         my $ff = File::Fetch->new( uri => $remote );
         my $where = $ff->fetch( to => $self->cache )
           or Carp::croak( $ff->error );
-        if ($HAS_IO_UNCOMPRES_GUNZIP) {
+        if ($HAS_IO_UNCOMPRESS_GUNZIP) {
             ( my $uncompressed = $where ) =~ s/\.gz$//;
             no warnings 'once';
             IO::Uncompress::Gunzip::gunzip( $where, $uncompressed )
