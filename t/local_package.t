@@ -25,6 +25,8 @@ sub new_local_index {
         'CPAN::Common::Index::LocalPackage' => [ { cache => $cache, source => $localgz } ],
         "new with cache and local gz"
     );
+    is $index->cache, $cache, "the cache constructor attribute is respected";
+    $index;
 }
 
 sub new_uncompressed_local_index {
@@ -33,6 +35,8 @@ sub new_uncompressed_local_index {
         'CPAN::Common::Index::LocalPackage' => [ { cache => $cache, source => $local } ],
         "new with cache and local uncompressed"
     );
+    is $index->cache, $cache, "the cache constructor attribute is respected";
+    $index;
 }
 
 require_ok("CPAN::Common::Index::LocalPackage");

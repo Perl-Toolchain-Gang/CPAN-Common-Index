@@ -24,6 +24,8 @@ sub new_mirror_index {
         'CPAN::Common::Index::Mirror' => [ { cache => $cache, mirror => $test_mirror } ],
         "new with cache and mirror"
     );
+    is $index->cache, $cache, "the cache constructor attribute is respected";
+    $index;
 }
 
 require_ok("CPAN::Common::Index::Mirror");
