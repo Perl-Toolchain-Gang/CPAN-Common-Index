@@ -5,7 +5,7 @@ use warnings;
 package CPAN::Common::Index::Mux::Ordered;
 # ABSTRACT: Consult indices in order and return the first result
 
-our $VERSION = '0.008';
+our $VERSION = '0.010';
 
 use parent 'CPAN::Common::Index';
 
