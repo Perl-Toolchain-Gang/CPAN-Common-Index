@@ -70,7 +70,7 @@ subtest 'refresh and unpack index files' => sub {
 
 # XXX test that files in cache aren't overwritten?
 
-my $common_tests = sub {
+sub common_tests {
     my $note =
       ( $CPAN::Common::Index::Mirror::HAS_IO_UNCOMPRESS_GUNZIP ? "with" : "without" )
       . " IO::Uncompress::Gunzip";
@@ -102,12 +102,12 @@ my $common_tests = sub {
         my $index = new_mirror_index;
         test_search_author($index);
     };
-};
+}
 
-$common_tests->();
+common_tests();
 if ($CPAN::Common::Index::Mirror::HAS_IO_UNCOMPRESS_GUNZIP) {
     local $CPAN::Common::Index::Mirror::HAS_IO_UNCOMPRESS_GUNZIP = 0;
-    $common_tests->();
+    common_tests();
 }
 
 done_testing;

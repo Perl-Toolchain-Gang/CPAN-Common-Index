@@ -93,7 +93,7 @@ subtest 'refresh and unpack uncompressed index files' => sub {
 
 # XXX test that files in cache aren't overwritten?
 
-my $common_tests = sub {
+sub common_tests {
     my ( $index_generater, $note );
     if ($CPAN::Common::Index::Mirror::HAS_IO_UNCOMPRESS_GUNZIP) {
         $index_generater = \&new_local_index;
@@ -121,12 +121,12 @@ my $common_tests = sub {
         my $index = $index_generater->();
         test_search_package($index);
     };
-};
+}
 
-$common_tests->();
+common_tests();
 if ($CPAN::Common::Index::Mirror::HAS_IO_UNCOMPRESS_GUNZIP) {
     local $CPAN::Common::Index::Mirror::HAS_IO_UNCOMPRESS_GUNZIP = 0;
-    $common_tests->();
+    common_tests();
 }
 
 done_testing;
