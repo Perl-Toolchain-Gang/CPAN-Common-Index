@@ -28,7 +28,7 @@ subtest "constructor tests" => sub {
     # uri specified
     new_ok(
         'CPAN::Common::Index::MetaDB' => [ { uri => "http://example.com" } ],
-        "new with cache"
+        "new with uri"
     );
 
 };
@@ -45,6 +45,28 @@ subtest 'find package' => sub {
         "uri format looks OK"
     );
 
+};
+
+subtest 'find package with fixed version' => sub {
+    my $index = new_ok("CPAN::Common::Index::MetaDB");
+
+    my $got = $index->search_packages( { package => 'Moose', version => '2.1404' } );
+    ok( $got,                    "found package" );
+    is( $got->{version}, 2.1404, "has a version" );
+    is(
+        $got->{uri},
+        "cpan:///distfile/ETHER/Moose-2.1404.tar.gz",
+        "uri is OK"
+    );
+
+};
+
+subtest 'find package with version range' => sub {
+    my $index = new_ok("CPAN::Common::Index::MetaDB");
+
+    my $got = $index->search_packages( { package => 'Moose', version_range => '< 2.14' } );
+    ok( $got,                    "found package" );
+    ok( $got->{version} <  2.14, "has a version" );
 };
 
 done_testing;
