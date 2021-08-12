@@ -14,7 +14,7 @@ use lib 't/lib';
 use CommonTests;
 
 my $cwd         = getcwd;
-my $test_mirror = "file:///$cwd/t/CPAN";
+my $test_mirror = "file://$cwd/t/CPAN";
 my $mailrc      = "01mailrc.txt";
 my $packages    = "02packages.details.txt";
 

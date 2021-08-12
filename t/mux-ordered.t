@@ -12,7 +12,7 @@ use lib 't/lib';
 use CommonTests;
 
 my $cwd         = getcwd;
-my $test_mirror = "file:///$cwd/t/CPAN";
+my $test_mirror = "file://$cwd/t/CPAN";
 my $local_pkg   = "t/CUSTOM/uncompressed";
 my $cache       = File::Temp->newdir;
 
